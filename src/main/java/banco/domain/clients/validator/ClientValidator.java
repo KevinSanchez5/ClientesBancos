@@ -1,6 +1,6 @@
-package banco.clients.validator;
+package banco.domain.clients.validator;
 
-import banco.clients.exceptions.ClientExceptionBadRequest;
+import banco.domain.clients.exceptions.ClientExceptionBadRequest;
 
 public class ClientValidator {
 

@@ -1,7 +1,8 @@
 package banco.clients.mapper;
 
-import banco.clients.dtos.ClientDto;
-import banco.clients.model.Client;
+import banco.domain.clients.dtos.ClientDto;
+import banco.domain.clients.mapper.ClientMapper;
+import banco.domain.clients.model.Client;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
@@ -14,12 +15,11 @@ class ClientMapperTest {
 
     ClientDto dto = new ClientDto("nameDto", "usernameDto", "emailDto");
 
-    ClientMapper mapper = new ClientMapper();
 
     @Test
     void fromEntitytoDtoResponse() {
 
-        var result = mapper.fromEntitytoDtoResponse(client);
+        var result = ClientMapper.fromEntitytoDtoResponse(client);
 
         assertAll(
                 () -> assertEquals(result.getName(), client.getName()),
@@ -32,14 +32,14 @@ class ClientMapperTest {
     @Test
     void fromDtoRequestToEntity() {
 
-        var result = mapper.fromDtoRequestToEntity(dto);
+        var result = ClientMapper.fromDtoRequestToEntity(dto);
 
         assertAll(
                 () -> assertInstanceOf(UUID.class, result.getId()),
                 () -> assertEquals(result.getName(), dto.getName()),
                 () -> assertEquals(result.getUsername(), dto.getUsername()),
                 () -> assertEquals(result.getEmail(), dto.getEmail()),
-                () -> assertNull(result.getCard()),
+                () -> assertNull(result.getCards()),
                 () -> assertNotNull(result.getCreatedAt()),
                 () -> assertNotNull(result.getUpdatedAt()),
                 () -> assertInstanceOf(LocalDateTime.class, result.getCreatedAt()),

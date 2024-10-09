@@ -1,19 +1,23 @@
-package banco.clients.model;
+package banco.domain.clients.model;
 
-import banco.cards.model.BankCard;
+import banco.domain.cards.model.BankCard;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Data
+@AllArgsConstructor
 public class Client {
     private UUID id;
     private String name;
     private String username;
     private String email;
-    //Puede ser una lista si tiene varias tarjetas
-    private BankCard card;
+    private List<BankCard> cards;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -22,7 +26,7 @@ public class Client {
         this.name = name;
         this.username = username;
         this.email = email;
-        this.card = null;
+        this.cards = new ArrayList<>();
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }

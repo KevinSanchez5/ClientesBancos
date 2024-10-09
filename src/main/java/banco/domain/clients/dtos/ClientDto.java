@@ -1,4 +1,4 @@
-package banco.clients.dtos;
+package banco.domain.clients.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

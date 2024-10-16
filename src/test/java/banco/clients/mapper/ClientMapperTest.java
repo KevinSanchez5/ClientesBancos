@@ -1,7 +1,8 @@
 package banco.clients.mapper;
 
-import banco.clients.dtos.ClientDto;
-import banco.clients.model.Client;
+import banco.domain.clients.dtos.ClientDto;
+import banco.domain.clients.mapper.ClientMapper;
+import banco.domain.clients.model.Client;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;

@@ -1,7 +1,7 @@
-package banco.clients.mapper;
+package banco.domain.clients.mapper;
 
-import banco.clients.dtos.ClientDto;
-import banco.clients.model.Client;
+import banco.domain.clients.dtos.ClientDto;
+import banco.domain.clients.model.Client;
 
 public class ClientMapper {
 

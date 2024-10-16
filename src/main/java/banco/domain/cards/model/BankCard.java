@@ -1,6 +1,6 @@
-package banco.cards.model;
+package banco.domain.cards.model;
 
-import banco.clients.model.Client;
+import banco.domain.clients.model.Client;
 import lombok.Data;
 
 import java.time.LocalDate;

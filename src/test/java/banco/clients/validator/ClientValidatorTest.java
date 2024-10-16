@@ -1,7 +1,8 @@
 package banco.clients.validator;
 
-import banco.clients.exceptions.ClientException;
-import banco.clients.exceptions.ClientExceptionBadRequest;
+import banco.domain.clients.exceptions.ClientException;
+import banco.domain.clients.exceptions.ClientExceptionBadRequest;
+import banco.domain.clients.validator.ClientValidator;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

@@ -11,7 +11,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClientMapperTest {
-    Client client = new Client("test", "userTest", "email");
+    Client client = new Client(1L, "test", "userTest", "email");
 
     ClientDto dto = new ClientDto("nameDto", "usernameDto", "emailDto");
 
@@ -35,11 +35,11 @@ class ClientMapperTest {
         var result = ClientMapper.fromDtoRequestToEntity(dto);
 
         assertAll(
-                () -> assertInstanceOf(UUID.class, result.getId()),
+                () -> assertNull(result.getId()),
                 () -> assertEquals(result.getName(), dto.getName()),
                 () -> assertEquals(result.getUsername(), dto.getUsername()),
                 () -> assertEquals(result.getEmail(), dto.getEmail()),
-                () -> assertNull(result.getCards()),
+                () -> assertNotNull(result.getCards()),
                 () -> assertNotNull(result.getCreatedAt()),
                 () -> assertNotNull(result.getUpdatedAt()),
                 () -> assertInstanceOf(LocalDateTime.class, result.getCreatedAt()),

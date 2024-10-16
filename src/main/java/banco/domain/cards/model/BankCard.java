@@ -1,6 +1,5 @@
 package banco.domain.cards.model;
 
-import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -8,6 +7,7 @@ import java.time.LocalDateTime;
 
 @Builder
 @Data
+@AllArgsConstructor
 public class BankCard {
     private String number;
     private Long clientId;

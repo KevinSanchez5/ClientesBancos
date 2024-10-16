@@ -13,7 +13,7 @@ import java.util.UUID;
 @Data
 @AllArgsConstructor
 public class Client {
-    private UUID id;
+    private Long id;
     private String name;
     private String username;
     private String email;
@@ -21,8 +21,8 @@ public class Client {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public Client (String name, String username, String email){
-        this.id = UUID.randomUUID();
+    public Client(Long id, String name, String username, String email) {
+        this.id =  id;
         this.name = name;
         this.username = username;
         this.email = email;

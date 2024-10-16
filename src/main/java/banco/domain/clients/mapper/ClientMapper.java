@@ -11,6 +11,7 @@ public class ClientMapper {
 
     public static Client fromDtoRequestToEntity(ClientDto dto) {
         return new Client (
+                null,
                 dto.getName(),
                 dto.getUsername(),
                 dto.getEmail()

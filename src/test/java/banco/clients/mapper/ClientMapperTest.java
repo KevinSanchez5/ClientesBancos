@@ -11,16 +11,15 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ClientMapperTest {
-    Client client = new Client("test", "userTest", "email");
+    Client client = new Client(1L, "test", "userTest", "email");
 
     ClientDto dto = new ClientDto("nameDto", "usernameDto", "emailDto");
 
-    ClientMapper mapper = new ClientMapper();
 
     @Test
     void fromEntitytoDtoResponse() {
 
-        var result = mapper.fromEntitytoDtoResponse(client);
+        var result = ClientMapper.fromEntitytoDtoResponse(client);
 
         assertAll(
                 () -> assertEquals(result.getName(), client.getName()),
@@ -33,14 +32,14 @@ class ClientMapperTest {
     @Test
     void fromDtoRequestToEntity() {
 
-        var result = mapper.fromDtoRequestToEntity(dto);
+        var result = ClientMapper.fromDtoRequestToEntity(dto);
 
         assertAll(
-                () -> assertInstanceOf(UUID.class, result.getId()),
+                () -> assertNull(result.getId()),
                 () -> assertEquals(result.getName(), dto.getName()),
                 () -> assertEquals(result.getUsername(), dto.getUsername()),
                 () -> assertEquals(result.getEmail(), dto.getEmail()),
-                () -> assertNull(result.getCard()),
+                () -> assertNotNull(result.getCards()),
                 () -> assertNotNull(result.getCreatedAt()),
                 () -> assertNotNull(result.getUpdatedAt()),
                 () -> assertInstanceOf(LocalDateTime.class, result.getCreatedAt()),

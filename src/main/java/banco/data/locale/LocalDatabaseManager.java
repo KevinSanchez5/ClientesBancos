@@ -35,12 +35,12 @@ public class LocalDatabaseManager {
 
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(properties.getProperty("db.url"));
-            config.setUsername(properties.getProperty("db.username"));
-            config.setPassword(properties.getProperty("db.password"));
+            config.setMinimumIdle(1);
             config.setMaximumPoolSize(Integer.parseInt(properties.getProperty("db.pool.size")));
             config.setConnectionTimeout(Long.parseLong(properties.getProperty("db.connectionTimeout")));
             config.setIdleTimeout(Long.parseLong(properties.getProperty("db.idleTimeout")));
             config.setMaxLifetime(Long.parseLong(properties.getProperty("db.maxLifetime")));
+
 
             dataSource = new HikariDataSource(config);
 

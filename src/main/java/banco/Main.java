@@ -7,6 +7,10 @@ import banco.domain.cards.model.BankCard;
 import banco.domain.clients.model.Client;
 import banco.domain.clients.repository.ImplClientRepository;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.concurrent.CompletableFuture;
@@ -22,7 +26,10 @@ public class Main {
 
             initializer.listTables();
 
+
             ImplClientRepository clientRepository = ImplClientRepository.getInstance(localDatabaseManager);
+
+
 
             // Crear una tarjeta y un cliente
             BankCard card1 = new BankCard("1234567890123456", 1L, LocalDate.of(2025, 12, 31), null, null);

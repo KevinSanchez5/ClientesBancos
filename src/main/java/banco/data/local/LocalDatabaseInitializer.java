@@ -54,7 +54,7 @@ public class LocalDatabaseInitializer {
     private void createBankCardsTable(Connection conn) {
         String createBankCardsTable = """
             CREATE TABLE IF NOT EXISTS bank_cards (
-                number VARCHAR(255) PRIMARY KEY,
+                number VARCHAR(16) PRIMARY KEY,
                 client_id INTEGER NOT NULL,
                 expiration_date DATE NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

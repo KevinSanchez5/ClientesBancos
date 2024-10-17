@@ -91,7 +91,7 @@ public class ImplClientRepository implements ClientRepository {
                             rs.getTimestamp("updated_at").toLocalDateTime()
                     );
 
-                    List<BankCard> cards = findAllCardsByClientId(client.getId());
+                    List<BankCard> cards = findAllCardsByClientId(id);
                     client.setCards(cards);
                     return client;
                 }

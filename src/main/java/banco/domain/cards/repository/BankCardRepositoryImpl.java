@@ -3,7 +3,7 @@ package banco.domain.cards.repository;
 import banco.domain.cards.exceptions.BankCardNotFoundException;
 import banco.domain.cards.exceptions.BankCardNotSavedException;
 import banco.domain.cards.model.BankCard;
-import banco.domain.cards.database.RemoteDatabaseManager;
+import banco.data.remote.RemoteDatabaseManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

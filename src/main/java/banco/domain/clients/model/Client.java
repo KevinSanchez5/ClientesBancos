@@ -2,6 +2,7 @@ package banco.domain.clients.model;
 
 import banco.domain.cards.model.BankCard;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import java.util.UUID;
 
 @Data
 @AllArgsConstructor
+@Builder
 public class Client {
     private Long id;
     private String name;
@@ -30,4 +32,5 @@ public class Client {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
+
 }

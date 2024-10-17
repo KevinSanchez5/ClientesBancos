@@ -1,63 +1,68 @@
 package banco;
 
-import banco.data.locale.LocalDatabaseConfig;
-import banco.data.locale.LocalDatabaseInitializer;
+import banco.data.local.LocalDatabaseConfig;
+import banco.data.local.LocalDatabaseInitializer;
+import banco.data.local.LocalDatabaseManager;
+import banco.domain.cards.model.BankCard;
 import banco.domain.clients.model.Client;
 import banco.domain.clients.repository.ImplClientRepository;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.concurrent.CompletableFuture;
 
 public class Main {
     public static void main(String[] args) {
-
         try {
-            LocalDatabaseConfig config = new LocalDatabaseConfig("src/main/resources/database.properties");
-            LocalDatabaseInitializer initializer = new LocalDatabaseInitializer(config);
+            // Inicializar la base de datos
+            LocalDatabaseConfig config = new LocalDatabaseConfig("src/main/resources/localclients/database.properties");
+            LocalDatabaseManager localDatabaseManager = LocalDatabaseManager.getInstance();
+            LocalDatabaseInitializer initializer = new LocalDatabaseInitializer(config, localDatabaseManager);
             initializer.initializeDatabase();
 
-            ImplClientRepository clientRepository = ImplClientRepository.getInstance();
+            initializer.listTables();
 
-            // guardar cliente
-            Client newClient = new Client(null, "Jane Doe", "janedoe", "jane.doe@example.com", new ArrayList<>(), null, null);
-            clientRepository.save(newClient).thenAccept(client -> {
-                System.out.println("Cliente guardado: " + client);
+            ImplClientRepository clientRepository = ImplClientRepository.getInstance(localDatabaseManager);
+
+            // Crear una tarjeta y un cliente
+            BankCard card1 = new BankCard("1234567890123456", 1L, LocalDate.of(2025, 12, 31), null, null);
+            ArrayList<BankCard> cards = new ArrayList<>();
+            cards.add(card1);
+
+            Client newClient = new Client(null, "Jane Doe", "janedoe", "jane.doe@example.com", cards, null, null);
+
+            // Guardar el cliente y su tarjeta
+            CompletableFuture<Void> future = clientRepository.save(newClient).thenAccept(savedClient -> {
+                System.out.println("Cliente guardado: " + savedClient);
+
+                // Buscar el cliente por su ID
+                clientRepository.findById(savedClient.getId()).thenAccept(client -> {
+                    System.out.println("Cliente encontrado: " + client);
+
+                    // Actualizar al cliente
+                    savedClient.setName("Jane Smith");
+                    clientRepository.update(savedClient.getId(), savedClient).thenRun(() -> {
+                        System.out.println("Cliente actualizado.");
+
+                        // Volver a buscar el cliente actualizado
+                        clientRepository.findById(savedClient.getId()).thenAccept(updatedClient -> {
+                            System.out.println("Cliente actualizado encontrado: " + updatedClient);
+
+                            // Eliminar el cliente
+                            clientRepository.delete(savedClient.getId()).thenRun(() -> {
+                                System.out.println("Cliente eliminado.");
+                            });
+                        });
+                    });
+                });
             });
 
-            Thread.sleep(1500);
-
-            clientRepository.findById(1L).thenAccept(client -> {
-                System.out.println("Cliente encontrado: " + client);
-            });
-
-            Thread.sleep(2000);
-
-
-            Client updatedClient = new Client(1L, "Jane Smith", "janesmith", "jane.smith@example.com", new ArrayList<>(), null, null);
-            clientRepository.update(1L, updatedClient).thenRun(() -> {
-                System.out.println("Cliente actualizado.");
-            });
-
-            Thread.sleep(2000);
-
-            clientRepository.findAll().thenAccept(clients -> {
-                System.out.println("Clientes en la base de datos: ");
-                clients.forEach(System.out::println);
-            });
-
-            clientRepository.delete(1L).thenRun(() -> {
-                System.out.println("Cliente eliminado.");
-            });
-
-            Thread.sleep(2000);
-
-            clientRepository.findAll().thenAccept(clients -> {
-                System.out.println("Clientes en la base de datos: ");
-                clients.forEach(System.out::println);
-            });
-
+            // Usar join para esperar a que todas las tareas asíncronas terminen
+            future.join();
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 }

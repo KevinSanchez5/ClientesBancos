@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 public class ImplClientRepository implements ClientRepository {
 
     private final Logger logger = LoggerFactory.getLogger(ImplClientRepository.class);
-    public static ImplClientRepository instance;
+    private static ImplClientRepository instance;
     private final LocalDatabaseManager localDatabase;
 
 

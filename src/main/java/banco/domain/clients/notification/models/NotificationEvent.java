@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class NotificationEvent {
-    private final NotificationType type;
+    private final NotificationType type; //CREATE, UPDATE, DELETE
     private final Client client;
 
     public NotificationEvent(NotificationType type, Client clientDto) {

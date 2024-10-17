@@ -1,7 +1,7 @@
 package banco.data.local;
 
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 public class LocalDatabaseConfig {
@@ -11,7 +11,7 @@ public class LocalDatabaseConfig {
 
     public LocalDatabaseConfig(String propertiesFilePath) throws IOException {
         Properties properties = new Properties();
-        try (FileInputStream input = new FileInputStream(propertiesFilePath)) {
+        try (InputStream input =getClass().getClassLoader().getResourceAsStream(propertiesFilePath)) {
             properties.load(input);
             this.url = properties.getProperty("db.url");
             this.username = properties.getProperty("db.username");

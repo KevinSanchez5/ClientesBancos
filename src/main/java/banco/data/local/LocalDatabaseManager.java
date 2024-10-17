@@ -1,4 +1,4 @@
-package banco.data.locale;
+package banco.data.local;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -26,7 +26,7 @@ public class LocalDatabaseManager {
     private LocalDatabaseManager() {
         try {
             Properties properties = new Properties();
-            try (InputStream input = getClass().getClassLoader().getResourceAsStream("database.properties")) {
+            try (InputStream input = getClass().getClassLoader().getResourceAsStream("localclients/database.properties")) {
                 if (input == null) {
                     throw new RuntimeException("No se pudo encontrar el archivo database.properties");
                 }

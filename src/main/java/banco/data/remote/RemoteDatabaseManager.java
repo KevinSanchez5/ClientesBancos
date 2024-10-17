@@ -1,4 +1,4 @@
-package banco.domain.cards.database;
+package banco.data.remote;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;

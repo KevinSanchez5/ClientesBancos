@@ -1,4 +1,4 @@
-package banco.data.locale;
+package banco.data.local;
 
 import java.io.FileInputStream;
 import java.io.IOException;

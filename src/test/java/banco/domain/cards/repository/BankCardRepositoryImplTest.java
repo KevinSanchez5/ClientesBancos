@@ -1,7 +1,7 @@
-package banco.cards.repository;
+package banco.domain.cards.repository;
 
 import banco.domain.cards.model.BankCard;
-import banco.domain.cards.database.RemoteDatabaseManager;
+import banco.data.remote.RemoteDatabaseManager;
 import banco.domain.cards.repository.BankCardRepositoryImpl;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.PostgreSQLContainer;

@@ -1,4 +1,4 @@
-package banco.clients.validator;
+package banco.domain.clients.validator;
 
 import banco.domain.clients.exceptions.ClientException;
 import banco.domain.clients.exceptions.ClientExceptionBadRequest;

@@ -2,16 +2,21 @@ package banco;
 
 import banco.data.locale.LocalDatabaseConfig;
 import banco.data.locale.LocalDatabaseInitializer;
+import banco.domain.cards.database.RemoteDatabaseManager;
+import banco.domain.cards.model.BankCard;
+import banco.domain.cards.repository.BankCardRepositoryImpl;
 import banco.domain.clients.model.Client;
 import banco.domain.clients.repository.ImplClientRepository;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
 
         try {
-            LocalDatabaseConfig config = new LocalDatabaseConfig("src/main/resources/database.properties");
+            LocalDatabaseConfig config = new LocalDatabaseConfig("database.properties");
             LocalDatabaseInitializer initializer = new LocalDatabaseInitializer(config);
             initializer.initializeDatabase();
 
@@ -55,6 +60,20 @@ public class Main {
                 clients.forEach(System.out::println);
             });
 
+            RemoteDatabaseManager db= RemoteDatabaseManager.getInstance();
+            BankCardRepositoryImpl bankCardRepository = BankCardRepositoryImpl.getInstance(db);
+
+            bankCardRepository.save(
+                    BankCard.builder()
+                            .number("9876543210987654")
+                            .clientId(1L)
+                            .expirationDate(LocalDate.now().plusYears(3))
+                            .createdAt(LocalDateTime.now())
+                            .updatedAt(LocalDateTime.now())
+                            .build()
+            );
+
+            System.out.println(bankCardRepository.findById("9876543210987654").get().toString());
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,12 +1,12 @@
 package banco.domain.cards.database;
 
+import banco.Main;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.apache.ibatis.jdbc.ScriptRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
@@ -15,33 +15,32 @@ public class RemoteDatabaseManager {
     private static RemoteDatabaseManager instance;
     private final Logger logger = LoggerFactory.getLogger(RemoteDatabaseManager.class);
     private HikariDataSource dataSource;
-    private boolean databaseInitTables = false; // Deberíamos inicializar las tablas? Fichero de configuración
-    private String databaseUrl = "jdbc:postgresql://portgres:password@localhost:5432/cards"; // Fichero de configuración se lee en el constructor
-    private String databaseInitScript = "bankcards/init.sql"; // Fichero de configuración se lee en el constructor
+    private String databaseUrl = "jdbc:postgresql://postgres-db:5432/cards"; // Fichero de configuración se lee en el constructor
     private Connection conn;
+    private String username;
+    private String password;
+    private Integer poolSize;
 
-    // Constructor privado para que no se pueda instanciar Singleton
+    /** 
+     * Constructor privado para que no se pueda instanciar Singleton
+     * @param forTesting decide si se inicia el dataSource
+     */
     private RemoteDatabaseManager(Boolean forTesting) {
         if (!forTesting) {
-            loadProperties();
             HikariConfig config = new HikariConfig();
+            getProperties(); // Leemos la url de la base de datos desde el fichero de propiedades
             config.setJdbcUrl(databaseUrl);
+            config.setUsername(username);
+            config.setPassword(password);
+            config.setMaximumPoolSize(poolSize);
+            config.setDriverClassName("org.postgresql.Driver");
             dataSource = new HikariDataSource(config);
-            try (Connection conn = dataSource.getConnection()) {
-                if (databaseInitTables) {
-                    initTables(conn);
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
     /**
-     * Método para obtener la instancia de la base de datos
-     * Lo ideal e
-     *
-     * @return
+     * Método para obtener la instancia del manager de la base de datos remota
+     * @return una instancia de RemoteDatabaseManager
      */
     public static synchronized RemoteDatabaseManager getInstance() {
         if (instance == null) {
@@ -50,8 +49,32 @@ public class RemoteDatabaseManager {
         return instance;
     }
 
+    private void getProperties(){
+        logger.debug("Cargando fichero de configuración de la base de datos");
+        try {
+            var file = Main.class.getClassLoader().getResourceAsStream("database.properties");
+            var props = new Properties();
+            props.load(file);
+            // Establecemos la url de la base de datos
+            databaseUrl = props.getProperty("cards.database.url", "jdbc:postgresql://postgres-db:5432/cards");
+            username = props.getProperty("cards.database.username", "postgres");
+            password = props.getProperty("cards.database.password", "password");
+            poolSize = Integer.parseInt(props.getProperty("cards.database.pool.size", "10"));
+
+        } catch (IOException e) {
+            logger.error("Error al leer el fichero de configuración de la base de datos " + e.getMessage());
+        }
+
+    }
+
+    /**
+     * Método para obtener la instancia del manager de la base de datos remota dedicado para tests
+     * @return una instancia de RemoteDatabaseManager que no tiene creada la conexion
+     */
     public static synchronized RemoteDatabaseManager getTestInstance(
-            String url, String username, String password
+            String url, 
+            String username, 
+            String password
     ) {
         if (instance == null) {
             instance = new RemoteDatabaseManager(true);
@@ -63,53 +86,19 @@ public class RemoteDatabaseManager {
         }
         return instance;
     }
-
-    private synchronized void loadProperties() {
-        logger.debug("Cargando fichero de configuración de la base de datos");
-        try {
-            var file = ClassLoader.getSystemResource("bankcards/application.properties").getFile();
-            var props = new Properties();
-            props.load(new FileReader(file));
-            // Establecemos la url de la base de datos
-            databaseUrl = props.getProperty("database.url");
-            databaseInitTables = Boolean.parseBoolean(props.getProperty("database.initTables", "false"));
-        } catch (IOException e) {
-            logger.error("Error al leer el fichero de configuración de la base de datos " + e.getMessage());
-        }
-    }
-
-
+    
     /**
-     * Método para inicializar la base de datos y las tablas
-     * Esto puede ser muy complejo y mejor usar un script, ademas podemos usar datos de ejemplo en el script
-     */
-    private synchronized void initTables(Connection conn) {
-        try {
-            executeScript(conn, databaseInitScript, true);
-        } catch (FileNotFoundException e) {
-            logger.error("Error al leer el fichero de inicialización de la base de datos " + e.getMessage());
-        }
-    }
-
-    /**
-     * Método para ejecutar un script de SQL
+     * Obtiene una conexión a la base de datos remota.
      *
-     * @param conn
-     * @param scriptSqlFile nombre del fichero de script SQL
-     * @param logWriter     si queremos que nos muestre el log de la ejecución
-     * @throws FileNotFoundException
+     * Este método se encarga de obtener una conexión a la base de datos remota utilizando el
+     * {@link HikariDataSource} que se configura en el constructor de la clase. La conexión
+     * se obtiene de manera sincronizada para evitar problemas de concurrencia.
+     *
+     * @return Un objeto {@link Connection} que representa la conexión a la base de datos.
+     * @throws SQLException Si se produce algún error durante la obtención de la conexión.
      */
-    public synchronized void executeScript(Connection conn, String scriptSqlFile, boolean logWriter) throws FileNotFoundException {
-        ScriptRunner sr = new ScriptRunner(conn);
-        var file = ClassLoader.getSystemResource(scriptSqlFile).getFile();
-        logger.debug("Ejecutando script de SQL " + file);
-        Reader reader = new BufferedReader(new FileReader(file));
-        sr.setLogWriter(logWriter ? new PrintWriter(System.out) : null);
-        sr.runScript(reader);
-    }
-
-
     public synchronized Connection getConnection() throws SQLException {
+        logger.debug("Obteniendo una conexión a la base de datos");
         return dataSource.getConnection();
     }
 }

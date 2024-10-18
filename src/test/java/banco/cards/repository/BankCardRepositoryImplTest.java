@@ -30,6 +30,7 @@ class BankCardRepositoryImplTest {
             .withUsername("postgres")
             .withInitScript("bankcards/init.sql")
             .withExposedPorts(5432)
+            .withNetworkMode("bridge")
             .waitingFor(Wait.forListeningPort());
 
     @BeforeAll

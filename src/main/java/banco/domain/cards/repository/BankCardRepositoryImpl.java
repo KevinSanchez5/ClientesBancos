@@ -84,7 +84,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
     }
 
     /**
-     * Busca una tarjeta de crédito por su UUID.
+     * Busca una tarjeta de crédito por su número.
      *
      * @param id El número de la tarjeta de crédito a buscar.
      * @return Un `CompletableFuture` que contiene la tarjeta de crédito si se encuentra, o `null` si no existe.
@@ -94,7 +94,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
         return CompletableFuture.supplyAsync(() -> {
             BankCard bankCard = null;
             String query = "SELECT * FROM BankCards WHERE number = ?";
-            logger.debug("Buscando la tarjeta de crédito con uuid: {}", id);
+            logger.debug("Buscando la tarjeta de crédito con número: {}", id);
 
             try (var connection = db.getConnection();
                  var stmt = connection.prepareStatement(query)) {
@@ -110,7 +110,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
                             .build();
                 }
             } catch (SQLException e) {
-                logger.error("Error al buscar la tarjeta de crédito por uuid", e);
+                logger.error("Error al buscar la tarjeta de crédito con número", e);
                 throw new CompletionException(e);
             }
             return bankCard;
@@ -140,7 +140,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
                 int res = stmt.executeUpdate();
                 if (res == 0) {
                     logger.error("Tarjeta de crédito no guardada");
-                    throw new BankCardNotSavedException("Tarjeta de crédito no guardada con id: " + bankCard.getNumber());
+                    throw new BankCardNotSavedException("Tarjeta de crédito no guardada con número: " + bankCard.getNumber());
                 }
             } catch (SQLException | BankCardNotSavedException e) {
                 logger.error("Error al guardar la tarjeta de crédito", e);
@@ -161,7 +161,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
     public CompletableFuture<BankCard> update(String id, BankCard bankCard) {
         return CompletableFuture.supplyAsync(() -> {
             String query = "UPDATE BankCards SET expirationDate = ?, updatedAt = ? WHERE number = ?";
-            logger.debug("Actualizando la tarjeta de crédito con uuid: {}", id);
+            logger.debug("Actualizando la tarjeta de crédito con número: {}", id);
 
             try (var connection = db.getConnection();
                  var stmt = connection.prepareStatement(query)) {
@@ -187,16 +187,16 @@ public class BankCardRepositoryImpl implements BankCardRepository {
     }
 
     /**
-     * Elimina una tarjeta de crédito de la base de datos por su UUID.
+     * Elimina una tarjeta de crédito de la base de datos por su número.
      *
-     * @param id El id de la tarjeta de crédito a eliminar.
+     * @param id El número de la tarjeta de crédito a eliminar.
      * @return Un `CompletableFuture` que contiene `true` si la tarjeta fue eliminada, o `false` si no se encontró.
      */
     @Override
     public CompletableFuture<Boolean> delete(String id) {
         return CompletableFuture.supplyAsync(() -> {
             String query = "DELETE FROM BankCards WHERE number = ?";
-            logger.debug("Eliminando la tarjeta de crédito con uuid: {}", id);
+            logger.debug("Eliminando la tarjeta de crédito con número: {}", id);
 
             try (var connection = db.getConnection();
                  var stmt = connection.prepareStatement(query)) {
@@ -214,7 +214,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
     /**
      * Busca todas las tarjetas de crédito asociadas a un cliente.
      *
-     * @param clientId El UUID del cliente.
+     * @param clientId El id del cliente.
      * @return Un `CompletableFuture` que contiene una lista de tarjetas de crédito asociadas al cliente, o una lista vacía si no se encuentran.
      */
     @Override
@@ -222,7 +222,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
         return CompletableFuture.supplyAsync(() -> {
             List<BankCard> lista = new ArrayList<>();
             String query = "SELECT * FROM BankCards WHERE clientId = ?";
-            logger.debug("Buscando las tarjetas de crédito del cliente con uuid: {}", clientId);
+            logger.debug("Buscando las tarjetas de crédito del cliente con id: {}", clientId);
 
             try (var connection = db.getConnection();
                  var stmt = connection.prepareStatement(query)) {

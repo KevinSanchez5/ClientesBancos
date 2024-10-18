@@ -7,5 +7,5 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface BankCardRepository extends Repository<String, BankCard> {
-    public CompletableFuture<List<BankCard>> getBankCardsByClientId(Long client);
+    CompletableFuture<List<BankCard>> getBankCardsByClientId(Long client);
 }

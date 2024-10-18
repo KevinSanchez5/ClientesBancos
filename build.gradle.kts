@@ -1,5 +1,7 @@
 plugins {
     id("java")
+    id("io.freefair.lombok") version "8.6"
+    id("jacoco")
 }
 
 group = "kj"
@@ -19,7 +21,7 @@ dependencies {
     testImplementation("org.testcontainers:junit-jupiter:1.20.2")
     testImplementation("org.testcontainers:postgresql:1.20.2")
 
-    //Logger SLF4J
+    // Logger SLF4J
     implementation("ch.qos.logback:logback-classic:1.4.14")
     implementation("org.slf4j:slf4j-simple:1.7.32")
 
@@ -39,11 +41,11 @@ dependencies {
     // Ibatis
     implementation("org.mybatis:mybatis:3.5.13")
 
-    //Junit
+    // Junit
     testImplementation(platform("org.junit:junit-bom:5.9.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 
-    //Mockito
+    // Mockito
     testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
 
@@ -51,4 +53,32 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+}
+
+
+tasks.jar {
+    manifest {
+        // Clase principal
+        attributes["Main-Class"] = "banco.Main"
+    }
+    // Incluir dependencias
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+    // Excluir duplicados
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+jacoco {
+    toolVersion = "0.8.7"
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
+    }
 }

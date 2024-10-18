@@ -70,7 +70,7 @@ public class ImplClientRepository implements ClientRepository {
                     if (cardNumber != null) {
                         BankCard card = new BankCard(
                                 cardNumber,
-                                clientMap.get(clientId), // Usar el cliente del mapa
+                                clientMap.get(clientId).getId(), // Usar el cliente del mapa
                                 rs.getDate("expiration_date").toLocalDate(),
                                 rs.getTimestamp("card_created_at").toLocalDateTime(),
                                 rs.getTimestamp("card_updated_at").toLocalDateTime()
@@ -121,7 +121,7 @@ public class ImplClientRepository implements ClientRepository {
                         if (cardNumber != null) {
                             BankCard card = new BankCard(
                                     cardNumber,
-                                    client, // Cliente asociado a la tarjeta
+                                    client.getId(), // Cliente asociado a la tarjeta
                                     rs.getDate("expiration_date").toLocalDate(),
                                     rs.getTimestamp("card_created_at").toLocalDateTime(),
                                     rs.getTimestamp("card_updated_at").toLocalDateTime()

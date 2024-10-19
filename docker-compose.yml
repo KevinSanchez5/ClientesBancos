@@ -1,0 +1,39 @@
+# Servicios de almacenamiento de datos
+# Desarrollo
+services:
+  # PostgreSQL
+  postgres-db:
+    container_name: cards-db_postgres
+    image: postgres:12.0-alpine
+    restart: always
+    env_file: .env
+    environment:
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DATABASE}
+    ports:
+      - ${POSTGRES_PORT}:5432
+    volumes:
+      - ./database/cards/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-db-data:/var/lib/postgresql/data
+    networks:
+      - banco-network
+
+  # App de banco
+  banco-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: banco-app
+    env_file: .env
+    networks:
+      - banco-network
+    depends_on:
+      - postgres-db
+
+networks:
+  banco-network:
+    driver: bridge
+
+volumes:
+  postgres-db-data:

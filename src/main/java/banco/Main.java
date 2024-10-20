@@ -1,85 +1,79 @@
 package banco;
 
-
-import banco.data.local.LocalDatabaseConfig;
-import banco.data.local.LocalDatabaseInitializer;
-import banco.data.local.LocalDatabaseManager;
-import banco.data.remote.RemoteDatabaseManager;
-import banco.domain.cards.model.BankCard;
-import banco.domain.cards.repository.BankCardRepositoryImpl;
 import banco.domain.clients.model.Client;
-import banco.domain.clients.repository.ImplClientRepository;
+import banco.domain.clients.storage.json.ClientStorage;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
-import java.time.LocalDate;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 public class Main {
+
     public static void main(String[] args) {
-        try {
-            LocalDatabaseManager manager = LocalDatabaseManager.getInstance();
-            LocalDatabaseConfig config = new LocalDatabaseConfig("localclients/database.properties");
-            LocalDatabaseInitializer initializer = new LocalDatabaseInitializer(config, manager);
-            initializer.initializeDatabase();
-
-            ImplClientRepository clientRepository = ImplClientRepository.getInstance(manager);
-
-            // guardar cliente
-            Client newClient = new Client(null, "Jane Doe", "janedoe", "jane.doe@example.com", new ArrayList<>(), null, null);
-            clientRepository.save(newClient).thenAccept(client -> {
-                System.out.println("Cliente guardado: " + client);
-            });
-
-            Thread.sleep(1500);
-
-            clientRepository.findById(1L).thenAccept(client -> {
-                System.out.println("Cliente encontrado: " + client);
-            });
-
-            //Thread.sleep(2000);
-
-
-            Client updatedClient = new Client(1L, "Jane Smith", "janesmith", "jane.smith@example.com", new ArrayList<>(), null, null);
-            clientRepository.update(1L, updatedClient).thenRun(() -> {
-                System.out.println("Cliente actualizado.");
-            });
-
-            Thread.sleep(2000);
-
-            clientRepository.findAll().thenAccept(clients -> {
-                System.out.println("Clientes en la base de datos: ");
-                clients.forEach(System.out::println);
-            });
-
-            clientRepository.delete(1L).thenRun(() -> {
-                System.out.println("Cliente eliminado.");
-            });
-
-            Thread.sleep(2000);
-
-            clientRepository.findAll().thenAccept(clients -> {
-                System.out.println("Clientes en la base de datos: ");
-                clients.forEach(System.out::println);
-            });
-
-            RemoteDatabaseManager db= RemoteDatabaseManager.getInstance();
-            BankCardRepositoryImpl bankCardRepository = BankCardRepositoryImpl.getInstance(db);
-
-            bankCardRepository.save(
-                    BankCard.builder()
-                            .number("9876543210987654")
-                            .clientId(1L)
-                            .expirationDate(LocalDate.now().plusYears(3))
-                            .createdAt(LocalDateTime.now())
-                            .updatedAt(LocalDateTime.now())
-                            .build()
-            );
-
-            System.out.println(bankCardRepository.findById("9876543210987654").get().toString());
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        importClients();
+        exportClients();
     }
 
+    public static void importClients() {
+        ClientStorage reader = new ClientStorage();
+
+        File file = null;
+        try {
+            file = Paths.get(ClassLoader.getSystemResource("example/clientes.json").toURI()).toFile();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        Mono<Client> clientFlux = reader.importFile(file);
+
+        clientFlux.subscribe(
+                client -> System.out.println("Cliente recibido: " + client),
+                error -> System.err.println("Error: " + error),
+                () -> System.out.println("Lectura completa")
+        );
+    }
+
+
+
+        public static void exportClients() {
+        ClientStorage reader = new ClientStorage();
+        Path path = Paths.get("src/main/resources/example/archivo_export.json");
+
+        try {
+            Files.createDirectories(path.getParent());
+            if (!Files.exists(path)) {
+                Files.createFile(path);
+            }
+        } catch (IOException e) {
+            System.err.println("Error creating file: " + e.getMessage());
+            return;
+        }
+
+        File file = path.toFile();
+        List<Client> clients = new ArrayList<>();
+        clients.add(new Client(1L, "John Doe", "johndoe", "john.doe@example.com"));
+        clients.add(new Client(2L, "Jane Smith", "janesmith", "jane.smith@example.com"));
+
+        for (Client client : clients) {
+            client.setCards(new ArrayList<>());
+            client.setCreatedAt(LocalDateTime.now());
+            client.setUpdatedAt(LocalDateTime.now());
+        }
+
+        System.out.println("Exportando clientes: " + clients);
+
+        reader.exportFile(file, clients)
+                .doOnSubscribe(sub -> System.out.println("Iniciando exportación..."))
+                .doOnSuccess(success -> System.out.println("Clientes exportados exitosamente"))
+                .doOnError(error -> System.err.println("Error: " + error.getMessage()))
+                .block();  // Cambia a .block() para asegurar ejecución síncrona
+    }
 }

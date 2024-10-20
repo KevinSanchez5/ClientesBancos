@@ -16,4 +16,7 @@ public class BankCard {
     private LocalDate expirationDate;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public BankCard() {
+    }
 }

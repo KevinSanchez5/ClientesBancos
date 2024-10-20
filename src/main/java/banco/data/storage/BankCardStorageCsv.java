@@ -14,6 +14,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -22,6 +23,9 @@ import java.util.List;
  */
 public class BankCardStorageCsv {
     private final Logger logger = LoggerFactory.getLogger(BankCardStorageCsv.class);
+    DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+
 
     /**
      * Importa las tarjetas de crédito desde un archivo CSV.
@@ -36,8 +40,15 @@ public class BankCardStorageCsv {
                 reader.lines()
                         .skip(1)
                         .forEach(line -> {
+                            logger.debug("Línea leída: {}", line);
                             BankCard bankCard = parseLine(List.of(line.split(",")));
+                            if (bankCard != null){
                             emitter.next(bankCard);
+                            }
+                            else{
+                                logger.error("Error al convertir la línea CSV en BankCard");
+                            }
+
                         });
                 emitter.complete();
             } catch (Exception e) {
@@ -56,16 +67,16 @@ public class BankCardStorageCsv {
      */
     public Mono<Void> exportBankCards(File file, List<BankCard> bankCards) {
         logger.debug("Exportando tarjetas de crédito al archivo: {}", file.getAbsolutePath());
-        return Mono.create(emitter -> {
+        return Mono.<Void>create(emitter -> {
             try (FileWriter writer = new FileWriter(file)) {
                 writer.write("number,clientId,expirationDate,createdAt,updatedAt\n");
                 for (BankCard bankCard : bankCards) {
                     writer.write(String.format("%s,%d,%s,%s,%s\n",
                             bankCard.getNumber(),
                             bankCard.getClientId(),
-                            bankCard.getExpirationDate(),
-                            bankCard.getCreatedAt(),
-                            bankCard.getUpdatedAt()));
+                            bankCard.getExpirationDate().format(dateFormatter),
+                            bankCard.getCreatedAt().format(dateTimeFormatter),
+                            bankCard.getUpdatedAt().format(dateTimeFormatter)));
                 }
                 emitter.success();
             } catch (IOException e) {
@@ -82,12 +93,17 @@ public class BankCardStorageCsv {
      * @return Un objeto {@link BankCard}.
      */
     private BankCard parseLine(List<String> parts) {
-        return new BankCard(
-                parts.get(0),
-                Long.parseLong(parts.get(1)),
-                LocalDate.parse(parts.get(2)),
-                LocalDateTime.now(),
-                LocalDateTime.now()
-        );
+        try {
+            return  BankCard.builder()
+                    .number(parts.get(0))
+                    .clientId(Long.parseLong(parts.get(1)))
+                    .expirationDate(LocalDate.parse(parts.get(2), dateFormatter))
+                    .createdAt(LocalDateTime.parse(parts.get(3), dateTimeFormatter))
+                    .updatedAt(LocalDateTime.parse(parts.get(4), dateTimeFormatter))
+                    .build();
+        } catch (Exception e) {
+            logger.error("Error al convertir la línea CSV en BankCard", e);
+            return null;
+        }
     }
 }

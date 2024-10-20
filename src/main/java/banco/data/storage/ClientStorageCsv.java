@@ -13,6 +13,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -20,7 +21,9 @@ import java.util.List;
  * Proporciona métodos para importar y exportar clientes de manera reactiva.
  */
 public class ClientStorageCsv {
+
     private final Logger logger = LoggerFactory.getLogger(ClientStorageCsv.class);
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     /**
      * Importa los clientes desde un archivo CSV.
@@ -55,7 +58,7 @@ public class ClientStorageCsv {
      */
     public Mono<Void> exportClients(File file, List<Client> clients) {
         logger.debug("Exportando clientes al archivo: {}", file.getAbsolutePath());
-        return Mono.create(emitter -> {
+        return Mono.<Void>create(emitter -> {
             try (FileWriter writer = new FileWriter(file)) {
                 writer.write("id,name,username,email,createdAt,updatedAt\n");
                 for (Client client : clients) {
@@ -64,8 +67,8 @@ public class ClientStorageCsv {
                             client.getName(),
                             client.getUsername(),
                             client.getEmail(),
-                            client.getCreatedAt(),
-                            client.getUpdatedAt()));
+                            client.getCreatedAt().format(dateFormatter),
+                            client.getUpdatedAt().format(dateFormatter)));
                 }
                 emitter.success();
             } catch (IOException e) {
@@ -82,13 +85,13 @@ public class ClientStorageCsv {
      * @return Un objeto {@link Client}.
      */
     private Client parseLine(List<String> parts) {
-        return new Client(
-                Long.parseLong(parts.get(0)),
-                parts.get(1),
-                parts.get(2),
-                parts.get(3),
-                LocalDateTime.parse(parts.get(4)),
-                LocalDateTime.parse(parts.get(5))
-        );
+        return Client.builder()
+                .id(Long.parseLong(parts.get(0)))
+                .name(parts.get(1))
+                .username(parts.get(2))
+                .email(parts.get(3))
+                .createdAt(LocalDateTime.parse(parts.get(4)))
+                .updatedAt(LocalDateTime.parse(parts.get(5)))
+                .build();
     }
 }

@@ -14,12 +14,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
 
-public class ClientStorage implements Storage<Client> {
+public class ClientStorageJson implements Storage<Client> {
 
-    private final Logger logger = LoggerFactory.getLogger(ClientStorage.class);
+    private final Logger logger = LoggerFactory.getLogger(ClientStorageJson.class);
     private final ObjectMapper objectMapper;
 
-    public ClientStorage() {
+    public ClientStorageJson() {
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
     }

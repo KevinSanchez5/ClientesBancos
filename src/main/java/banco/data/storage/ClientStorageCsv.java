@@ -72,7 +72,7 @@ public class ClientStorageCsv {
                 logger.error("Error al exportar clientes", e);
                 emitter.error(e);
             }
-        }).subscribeOn(Schedulers.boundedElastic());
+        }).subscribeOn(Schedulers.boundedElastic()).then();
     }
 
     /**
@@ -82,13 +82,13 @@ public class ClientStorageCsv {
      * @return Un objeto {@link Client}.
      */
     private Client parseLine(List<String> parts) {
-        return new Client(
-                Long.parseLong(parts.get(0)),
-                parts.get(1),
-                parts.get(2),
-                parts.get(3),
-                LocalDateTime.parse(parts.get(4)),
-                LocalDateTime.parse(parts.get(5))
-        );
+        return Client.builder()
+                .id(Long.parseLong(parts.get(0)))
+                .name(parts.get(1))
+                .username(parts.get(2))
+                .email(parts.get(3))
+                .createdAt(LocalDateTime.parse(parts.get(4)))
+                .updatedAt(LocalDateTime.parse(parts.get(5)))
+                .build();
     }
 }

@@ -67,12 +67,12 @@ public class BankCardStorageCsv {
                             bankCard.getCreatedAt(),
                             bankCard.getUpdatedAt()));
                 }
-                emitter.success();
+                emitter.success(null);
             } catch (IOException e) {
                 logger.error("Error al exportar tarjetas de crédito", e);
                 emitter.error(e);
             }
-        }).subscribeOn(Schedulers.boundedElastic());
+        }).subscribeOn(Schedulers.boundedElastic()).then();
     }
 
     /**

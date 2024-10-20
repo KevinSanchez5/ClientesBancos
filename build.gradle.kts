@@ -49,6 +49,16 @@ dependencies {
     testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
 
+    // Jackson for JSON
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
+
+    // Reactor Core
+    implementation("io.projectreactor:reactor-core:3.6.10")
+
+    //data type
+    implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2")
+
 }
 
 tasks.test {

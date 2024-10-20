@@ -1,6 +1,6 @@
-package banco.domain.clients.notification;
+package banco.domain.clients.service.notification;
 
-import banco.domain.clients.notification.models.NotificationEvent;
+import banco.domain.clients.model.notification.NotificationEvent;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 
@@ -29,9 +29,14 @@ public class NotificationService {
         }
     }
 
-
     public void subscribe(Consumer<NotificationEvent> subscriber) {
         subscribers.add(subscriber);
+    }
+
+    public void autoSubscribeToConsole() {
+        this.flux.subscribe(event -> {
+            System.out.println("Notificación recibida: " + event.toString());
+        });
     }
 }
 

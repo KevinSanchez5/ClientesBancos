@@ -1,5 +1,6 @@
 package banco.data.local;
 
+import banco.data.remote.RemoteDatabaseManager;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -47,6 +48,20 @@ public class LocalDatabaseManager {
         } catch (IOException e) {
             throw new RuntimeException("Error al cargar las propiedades de la base de datos", e);
         }
+    }
+
+    public static synchronized LocalDatabaseManager getTestInstance(
+            String url, String username, String password
+    ) {
+        if (instance == null) {
+            instance = new LocalDatabaseManager();
+            HikariConfig config = new HikariConfig();
+            config.setJdbcUrl(url);
+            config.setUsername(username);
+            config.setPassword(password);
+            instance.dataSource = new HikariDataSource(config);
+        }
+        return instance;
     }
 
 

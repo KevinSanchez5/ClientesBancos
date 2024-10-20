@@ -1,12 +1,12 @@
 package banco.domain.clients.service;
 
-import banco.domain.clients.exceptions.ClientException;
 import banco.domain.clients.exceptions.ClientNotFound;
 import banco.domain.clients.model.Client;
-import banco.domain.clients.notification.NotificationService;
-import banco.domain.clients.notification.models.NotificationEvent;
-import banco.domain.clients.notification.models.NotificationType;
+import banco.domain.clients.service.notification.NotificationService;
+import banco.domain.clients.model.notification.NotificationEvent;
+import banco.domain.clients.model.notification.NotificationType;
 import banco.domain.clients.repository.ClientRepository;
+import banco.domain.clients.validator.ClientValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +19,13 @@ public class ImplClientService implements ClientService {
     //Acciones de consulta temporal en este repositorio hasta que este el remoto
     private final ClientRepository clientRepository;
     private final NotificationService notificationService = new NotificationService();
+    private final ClientValidator clientValidator = new ClientValidator();
 
     public ImplClientService(ClientRepository clientRepository) {
         this.clientRepository = clientRepository;
     }
 
-    public static synchronized ImplClientService getInstance(ClientRepository clientRepository, NotificationService notificationService) {
+    public static synchronized ImplClientService getInstance(ClientRepository clientRepository) {
         if (instance == null) {
             instance = new ImplClientService(clientRepository);
         }
@@ -52,8 +53,9 @@ public class ImplClientService implements ClientService {
     @Override
     public Client save(Client client) {
         try{
+            Client validClient = clientValidator.validate(client);
             logger.debug("Guardando cliente: {}", client.toString());
-            Client clientSaved = clientRepository.save(client).join();
+            Client clientSaved = clientRepository.save(validClient).join();
             NotificationEvent notificationEvent = new NotificationEvent(NotificationType.CREATE,clientSaved);
             notificationService.sendNotification(notificationEvent);
             return clientSaved;

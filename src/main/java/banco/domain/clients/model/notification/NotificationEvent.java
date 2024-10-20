@@ -1,4 +1,4 @@
-package banco.domain.clients.notification.models;
+package banco.domain.clients.model.notification;
 
 
 import banco.domain.clients.model.Client;

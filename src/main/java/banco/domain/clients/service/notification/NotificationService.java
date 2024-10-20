@@ -1,8 +1,9 @@
-package banco.domain.clients.notification;
+package banco.domain.clients.service.notification;
 
 import banco.domain.clients.notification.models.NotificationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import banco.domain.clients.model.notification.NotificationEvent;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.FluxSink;
 

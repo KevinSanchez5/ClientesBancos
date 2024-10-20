@@ -1,8 +1,16 @@
 package banco.domain.clients.validator;
 
 import banco.domain.clients.exceptions.ClientExceptionBadRequest;
+import banco.domain.clients.model.Client;
 
 public class ClientValidator {
+
+    public Client validate(Client client) throws ClientExceptionBadRequest {
+        String name = validateString(client.getName(), "nombre");
+        String username = validateString(client.getUsername(), "username");
+        String email = validateEmail(client.getEmail());
+        return new Client(client.getId(), name, username, email, client.getCards(), client.getCreatedAt(), client.getUpdatedAt());
+    }
 
     public String validateString(String cadena, String campo) throws ClientExceptionBadRequest {
         String cadenaTrim = cadena.trim();

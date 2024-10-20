@@ -35,7 +35,7 @@ dependencies {
     // Hikary
     implementation("com.zaxxer:HikariCP:5.0.1")
 
-    //PostGresSQL
+    // PostGresSQL
     implementation("org.postgresql:postgresql:42.7.4")
 
     // Ibatis
@@ -48,6 +48,10 @@ dependencies {
     // Mockito
     testImplementation("org.mockito:mockito-core:3.12.4")
     testImplementation("org.mockito:mockito-junit-jupiter:5.5.0")
+
+    // Reactor Test
+    testImplementation("io.projectreactor:reactor-test:3.6.11")
+
 
     // Jackson for JSON
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -26,17 +27,17 @@ public class ClientStorageJson implements Storage<Client> {
     }
 
     @Override
-    public Mono<Client> importFile(File file) {
-        return Mono.fromCallable(() -> {
-                    try (InputStream inputStream = new FileInputStream(file);
-                         Reader reader = new InputStreamReader(inputStream, StandardCharsets.ISO_8859_1)) {
-                        return objectMapper.readValue(reader, Client.class);
-                    }
-                })
-                .onErrorResume(e -> {
-                    logger.error("Error reading JSON file: {}", e.getMessage());
-                    return Mono.empty();
-                });
+    public Flux<Client> importFile(File file) {
+        return Flux.defer(() -> {
+            try (InputStream inputStream = new FileInputStream(file);
+                 Reader reader = new InputStreamReader(inputStream, StandardCharsets.ISO_8859_1)) {
+                Client[] clients = objectMapper.readValue(reader, Client[].class);
+                return Flux.fromArray(clients);
+            } catch (IOException e) {
+                logger.error("Error reading JSON file: {}", e.getMessage());
+                return Flux.empty();
+            }
+        });
     }
 
     @Override

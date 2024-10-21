@@ -176,6 +176,8 @@ classDiagram
 - **Patrón Repositorio**: La abstracción del repositorio facilita el manejo de datos entre la aplicación y las bases de datos (PostgreSQL y SQLite).
 - **Interfaces Genéricas**: El repositorio sigue un enfoque genérico para manejar entidades como `Cliente` y `Tarjeta`.
 
+### BankCard
+
 ```mermaid
 classDiagram
     direction LR
@@ -213,6 +215,8 @@ classDiagram
 
 ```
 
+### Client
+
 ```mermaid
 classDiagram
     direction LR
@@ -249,6 +253,45 @@ classDiagram
         + CompletableFuture~BankCard~ saveBankCard(BankCard bankCard)
         + CompletableFuture~Void~ updateBankCard(String cardNumber, BankCard updatedBankCard)
         + static ImplClientRepository getInstance(LocalDatabaseManager local)
+    }
+    
+
+
+```
+
+### Remote
+
+```mermaid
+classDiagram
+    direction LR
+    class Repository ~ID,T~ {
+        CompletableFuture ~List ~T~~ findAll()
+        CompletableFuture ~T~ findById(ID id)
+        CompletableFuture ~T~ save(~T~ object)
+        CompletableFuture ~T~ update(ID id, ~T~ object)
+        CompletableFuture ~Boolean~ delete(ID id)
+
+    }
+
+    Repository ..|> ClientRepository
+
+    class ClientRepository ~Long, Client~ {
+        CompletableFuture ~BankCard~ saveBankCard(~BankCard~ bankCard)
+        CompletableFuture ~Void~ updateBankCard(String number, ~BankCard~ bankCard)
+        CompletableFuture ~Void~ deleteBankCard(String number)
+    }
+
+    ClientRepository --> ClientRemoteRepository
+
+    class ClientRemoteRepository {
+        - ClientApiRest clientApiRest
+        - Logger logger
+        + ClientRemoteRepository(ClientApiRest clientApiRest)
+        + List<Client> getAll()
+        + Client getById(int id)
+        + Client createClient(Client client)
+        + Client updateClient(Client client)
+        + void deleteClient(int id)
     }
     
 

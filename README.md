@@ -55,7 +55,7 @@ direction LR
 - **Postman**
 ## Base de Datos
 
-Este proyecto utiliza dos bases de datos para gestionar la información de clientes y tarjetas de crédito:
+Este proyecto utiliza dos bases de datos de tipo relacional para gestionar la información de clientes y tarjetas de crédito:
 
 ### *PostgreSQL*
 

@@ -12,22 +12,22 @@ import retrofit2.http.*;
 import java.util.concurrent.CompletableFuture;
 
 public interface ClientApiRest {
-    String API_CLIENTS_URL = "/api/clients";
+    String API_CLIENTS_URL = "https://jsonplaceholder.typicode.com/";
 
 
-    @GET("clients")
+    @GET("users")
     Call<ResponseGetAll> getAllSync();
 
-    @GET("clients/{id}")
+    @GET("users/{id}")
     Call<ResponseGetById> getByIdSync(@Path("id") String id);
 
-    @POST("clients")
+    @POST("users")
     CompletableFuture<Response<Client>> createClient(@Body Request request);
 
-    @PUT("clients/{id}")
+    @PUT("users/{id}")
     CompletableFuture<Response<Client>> updateClient(@Path("id") String id, @Body Request request);
 
-    @DELETE("clients/{id}")
+    @DELETE("users/{id}")
     CompletableFuture<Response<Client>> deleteClient(@Path("id") String id);
 
 }

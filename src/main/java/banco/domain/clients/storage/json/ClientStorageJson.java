@@ -3,6 +3,7 @@ package banco.domain.clients.storage.json;
 import banco.domain.clients.model.Client;
 import banco.util.Storage;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +52,22 @@ public class ClientStorageJson implements Storage<Client> {
                 throw new UncheckedIOException(e);
             }
         }).subscribeOn(Schedulers.boundedElastic()).then();
+    }
+
+    public Mono<List<Client>> importFileMultipleClients(File file) {
+        return Mono.<List<Client>>fromCallable(() -> {
+                    try (InputStream inputStream = new FileInputStream(file);
+                         Reader reader = new InputStreamReader(inputStream, StandardCharsets.ISO_8859_1)) {
+                        // Utiliza el TypeFactory para leer una lista de clientes
+                        TypeFactory typeFactory = objectMapper.getTypeFactory();
+                        return objectMapper.readValue(reader, typeFactory.constructCollectionType(List.class, Client.class));
+                    }
+                })
+                .subscribeOn(Schedulers.boundedElastic()) // Mover aquí para asegurar que se ejecute en un hilo separado
+                .onErrorResume(e -> {
+                    logger.error("Error reading JSON file: {}", e.getMessage());
+                    return Mono.empty();
+                });
     }
 
 }

@@ -23,7 +23,11 @@ public class LocalDatabaseManager {
     }
 
 
-    // Constructor privado para el Singleton
+    /**
+     * Constructor privado para que no se pueda instanciar Singleton
+     * Inserta toda la configuracion de hickary a partir de un archivo de propiedades
+     * @throws RuntimeException si no se puede cargar el archivo de propiedades
+     */
     private LocalDatabaseManager() {
         try {
             Properties properties = new Properties();
@@ -50,6 +54,10 @@ public class LocalDatabaseManager {
         }
     }
 
+    /**
+     * Método para obtener la instancia del manager de la base de datos remota dedicado para tests
+     * @return una instancia de RemoteDatabaseManager que no tiene creada la conexion
+     */
     public static synchronized LocalDatabaseManager getTestInstance(
             String url, String username, String password
     ) {
@@ -65,7 +73,12 @@ public class LocalDatabaseManager {
     }
 
 
-
+    /**
+     * Obtiene una conexión a la base de datos.
+     *
+     * @return Un objeto {@link Connection} que representa la conexión a la base de datos.
+     * @throws SQLException Si se produce algún error durante la obtención de la conexión.
+     */
     public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }

@@ -1,38 +1,58 @@
 package banco;
 
+import banco.data.local.LocalDatabaseConfig;
+import banco.data.local.LocalDatabaseInitializer;
+import banco.data.local.LocalDatabaseManager;
+import banco.data.remote.RemoteDatabaseManager;
 import banco.data.storage.BankCardStorageCsv;
 import banco.domain.cards.model.BankCard;
+import banco.domain.cards.repository.BankCardRepository;
+import banco.domain.cards.repository.BankCardRepositoryImpl;
+import banco.domain.clients.model.Client;
+import banco.domain.clients.repository.ClientRemoteRepository;
+import banco.domain.clients.repository.ClientRepository;
+import banco.domain.clients.repository.ImplClientRepository;
+import banco.domain.clients.rest.ClientApiRest;
+import banco.domain.clients.rest.RetrofitClient;
+import banco.domain.clients.service.ImplClientService;
+import banco.domain.clients.service.notification.NotificationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
+import retrofit2.Retrofit;
 
 
 import java.io.File;
+import java.io.IOException;
 
 
 public class Main {
 
-    public static void main(String[] args) {
-        // Ubicación del archivo CSV
-        File file = new File("src/main/resources/example/bankcards.csv");
-        BankCardStorageCsv bankCardStorage = new BankCardStorageCsv();
+    public static void main(String[] args) throws IOException {
+        Logger logger = LoggerFactory.getLogger(Main.class);
+        LocalDatabaseConfig localDatabaseConfig = new LocalDatabaseConfig("resources/localclients/database.properties");
+        LocalDatabaseManager localDatabaseManager = LocalDatabaseManager.getInstance();
+        LocalDatabaseInitializer localDatabaseInitializer = new LocalDatabaseInitializer(localDatabaseConfig, localDatabaseManager);
+        localDatabaseInitializer.initializeDatabase();
+        RemoteDatabaseManager remoteDatabaseManager = RemoteDatabaseManager.getInstance();
 
-        // Importar tarjetas de crédito
-        Flux<BankCard> bankCardFlux = bankCardStorage.importBankCards(file);
-        bankCardFlux.collectList()
-                .subscribe(
-                        bankCards -> {
-                            System.out.println("Tarjetas importadas:");
-                            bankCards.forEach(bankCard -> System.out.println(bankCard));
+        String baseUrl = "https://jsonplaceholder.typicode.com/users"; // Cambia esto a tu URL base
+        Retrofit retrofit = RetrofitClient.getClient(baseUrl);
+        ClientApiRest clientApiRest = retrofit.create(ClientApiRest.class);
 
-                            // Exportar tarjetas de crédito a un nuevo archivo
-                            File exportFile = new File("src/main/resources/example/exported_bankcards.csv");
-                            bankCardStorage.exportBankCards(exportFile, bankCards)
-                                    .subscribe(
-                                            null,
-                                            error -> System.err.println("Error al exportar: " + error),
-                                            () -> System.out.println("Exportación completa.")
-                                    );
-                        },
-                        error -> System.err.println("Error al importar: " + error)
-                );
+        //Instancias para el servicio
+        ClientRemoteRepository clientRemoteRepository = new ClientRemoteRepository(clientApiRest);
+        ClientRepository localClientRepository = ImplClientRepository.getInstance(localDatabaseManager);
+        BankCardRepository bankCardRepository = new BankCardRepositoryImpl(remoteDatabaseManager);
+        NotificationService notificationService = new NotificationService();
+
+        // Crear la instancia del servicio
+        ImplClientService clientService = ImplClientService.getInstance(localClientRepository, bankCardRepository, clientRemoteRepository, notificationService);
+
+
+
+        logger.debug(clientService.findAllClients().toString());
+
     }
 }
+

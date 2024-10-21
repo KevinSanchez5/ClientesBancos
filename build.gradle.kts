@@ -52,7 +52,6 @@ dependencies {
     // Reactor Test
     testImplementation("io.projectreactor:reactor-test:3.6.11")
 
-
     // Jackson for JSON
     implementation("com.fasterxml.jackson.core:jackson-databind:2.13.3")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
@@ -67,8 +66,6 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-jackson:2.11.0") // Jackson con Retrofit
     implementation("com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0") // Reactor con Retrofit
     implementation("com.squareup.retrofit2:adapter-rxjava3:2.11.0") // RxJava3 con Retrofit
-
-
 }
 
 tasks.test {

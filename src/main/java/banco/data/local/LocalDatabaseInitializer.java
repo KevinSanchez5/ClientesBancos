@@ -8,6 +8,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+/**
+ * Clase para inicializar la base de datos local
+ */
 public class LocalDatabaseInitializer {
 
     private Logger logger = LoggerFactory.getLogger(LocalDatabaseInitializer.class);
@@ -19,6 +22,9 @@ public class LocalDatabaseInitializer {
         this.localDatabaseManager = localDatabaseManager;
     }
 
+    /**
+     * Inicializa la base de datos local
+     */
     public void initializeDatabase() {
         try (Connection conn = localDatabaseManager.getConnection()) {
             logger.debug("Conexión establecida.");
@@ -29,7 +35,11 @@ public class LocalDatabaseInitializer {
         }
     }
 
-
+    /**
+     * Crea la tabla 'clients' en la base de datos local si no existe
+     *
+     * @param conn la conexión a la base de datos
+     */
     private void createClientsTable(Connection conn) {
         String createClientsTable = """
             CREATE TABLE IF NOT EXISTS clients (
@@ -50,7 +60,11 @@ public class LocalDatabaseInitializer {
         }
     }
 
-
+    /**
+     * Crea la tabla 'bank_cards' en la base de datos local si no existe
+     *
+     * @param conn la conexión a la base de datos
+     */
     private void createBankCardsTable(Connection conn) {
         String createBankCardsTable = """
             CREATE TABLE IF NOT EXISTS bank_cards (
@@ -71,6 +85,9 @@ public class LocalDatabaseInitializer {
         }
     }
 
+    /**
+     * Lista las tablas de la base de datos
+     */
     public void listTables() {
         String query = "SELECT name FROM sqlite_master WHERE type='table';";
 

@@ -9,6 +9,11 @@ public class LocalDatabaseConfig {
     private String username;
     private String password;
 
+    /**
+     * Constructor lee las propiedades de un archivo de configuración
+     * @param propertiesFilePath
+     * @throws IOException
+     */
     public LocalDatabaseConfig(String propertiesFilePath) throws IOException {
         Properties properties = new Properties();
         try (InputStream input =getClass().getClassLoader().getResourceAsStream(propertiesFilePath)) {
@@ -18,16 +23,7 @@ public class LocalDatabaseConfig {
             this.password = properties.getProperty("db.password");
         }
     }
-
-    public String getUrl() {
-        return url;
-    }
-
     public String getUsername() {
         return username;
-    }
-
-    public String getPassword() {
-        return password;
     }
 }

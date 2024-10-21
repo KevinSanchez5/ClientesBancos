@@ -296,8 +296,7 @@ classDiagram
 
 ## Caché
 
-- La aplicación utiliza una implementación de caché personalizada, `CacheImpl`, que emplea un **LinkedHashMap** para almacenar elementos. 
-- La caché se vacía de manera eficiente cuando se alcanza el límite de elementos, manteniendo sólo los más recientes.
+La caché implementada por `ClientesCacheImpl` se utiliza para almacenar y gestionar datos de clientes de forma eficiente.
 
 ```mermaid
 classDiagram

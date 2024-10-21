@@ -367,6 +367,9 @@ de la aplicación. A continuación se describen los principales enfoques utiliza
     - Se realizan revisiones de código para asegurar que el código cumpla con los estándares de calidad y las mejores
       prácticas antes de ser fusionado.
 
+## Vídeo
+[Enlace del video:](https://youtu.be/iFl8UeWrj10)
+
 ## Autores del programa
 
 <table align="center">

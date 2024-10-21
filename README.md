@@ -368,7 +368,7 @@ de la aplicación. A continuación se describen los principales enfoques utiliza
       prácticas antes de ser fusionado.
 
 ## Vídeo
-[Enlace del video:](https://youtu.be/iFl8UeWrj10)
+[Enlace del video](https://youtu.be/iFl8UeWrj10)
 
 ## Autores del programa
 

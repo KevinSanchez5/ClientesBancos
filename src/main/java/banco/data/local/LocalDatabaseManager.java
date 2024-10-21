@@ -45,31 +45,12 @@ public class LocalDatabaseManager {
             config.setConnectionTimeout(Long.parseLong(properties.getProperty("db.connectionTimeout")));
             config.setIdleTimeout(Long.parseLong(properties.getProperty("db.idleTimeout")));
             config.setMaxLifetime(Long.parseLong(properties.getProperty("db.maxLifetime")));
-
-
             dataSource = new HikariDataSource(config);
+
 
         } catch (IOException e) {
             throw new RuntimeException("Error al cargar las propiedades de la base de datos", e);
         }
-    }
-
-    /**
-     * Método para obtener la instancia del manager de la base de datos remota dedicado para tests
-     * @return una instancia de RemoteDatabaseManager que no tiene creada la conexion
-     */
-    public static synchronized LocalDatabaseManager getTestInstance(
-            String url, String username, String password
-    ) {
-        if (instance == null) {
-            instance = new LocalDatabaseManager();
-            HikariConfig config = new HikariConfig();
-            config.setJdbcUrl(url);
-            config.setUsername(username);
-            config.setPassword(password);
-            instance.dataSource = new HikariDataSource(config);
-        }
-        return instance;
     }
 
 

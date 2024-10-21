@@ -37,6 +37,12 @@ public class ClientesCacheImpl implements ClientesCache {
         this.cleaner.scheduleAtFixedRate(this::clear, 1, 1, TimeUnit.MINUTES);
     }
 
+    /**
+     * Añade un cliente a la caché utilizando la clave y el valor proporcionados.
+     *
+     * @param key   La clave única del cliente en la caché. No puede ser nula.
+     * @param value El cliente que se añadirá a la caché. No puede ser nulo.
+     */
     @Override
     public void put(Long key, Client value) {
         logger.debug("Añadiendo cliente a la caché con id: " + key + " y valor: " + value);
@@ -47,7 +53,7 @@ public class ClientesCacheImpl implements ClientesCache {
      * Obtiene un cliente de la caché utilizando la clave proporcionada.
      *
      * @param key La clave única del cliente en la caché. No puede ser nula.
-     * @return El cliente asociado con la clave proporcionada, o null si no se encuentra en la caché.
+     * @return El cliente asociado con la clave proporcionada, o {@code null} si no se encuentra en la caché.
      */
     @Override
     public Client get(Long key) {
@@ -59,7 +65,6 @@ public class ClientesCacheImpl implements ClientesCache {
      * Elimina un cliente de la caché utilizando la clave proporcionada.
      *
      * @param key La clave única del cliente en la caché. No puede ser nula.
-     * @return Nada. Este método solo elimina el cliente asociado con la clave proporcionada de la caché.
      */
     @Override
     public void remove(Long key) {
@@ -71,8 +76,6 @@ public class ClientesCacheImpl implements ClientesCache {
      * Limpia la caché de clientes eliminando las entradas expiradas.
      * Las entradas expiradas se determinan comparando la hora de actualización del cliente con la hora actual,
      * y si la diferencia es de más de un minuto, se considera expirada.
-     *
-     * @return Nada. Este método solo elimina las entradas expiradas de la caché.
      */
     @Override
     public void clear() {
@@ -88,8 +91,6 @@ public class ClientesCacheImpl implements ClientesCache {
     /**
      * Apaga el hilo limpiador de la caché de clientes, deteniendo la ejecución programada de limpieza.
      * Este método debe ser llamado cuando se desee finalizar el uso de la caché para liberar recursos.
-     *
-     * @return Nada. Este método solo detiene el hilo limpiador de la caché.
      */
     @Override
     public void shutdown() {

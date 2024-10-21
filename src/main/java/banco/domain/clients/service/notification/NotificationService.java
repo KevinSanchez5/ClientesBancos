@@ -16,12 +16,18 @@ import java.util.function.Consumer;
 public class NotificationService {
 
     private final List<Consumer<NotificationEvent>> subscribers = new ArrayList<>();
-    private Flux<NotificationEvent> flux;
+    private final Flux<NotificationEvent> flux;
     private FluxSink<NotificationEvent> fluxSink;
-    private Logger log = LoggerFactory.getLogger(NotificationService.class);
+    private final Logger log = LoggerFactory.getLogger(NotificationService.class);
 
     public NotificationService() {
         this.flux = Flux.create(sink -> this.fluxSink = sink, FluxSink.OverflowStrategy.BUFFER);
+        // Connect the flux to notify all subscribers
+        this.flux.subscribe(event -> {
+            for (Consumer<NotificationEvent> subscriber : subscribers) {
+                subscriber.accept(event);
+            }
+        });
     }
 
     /**

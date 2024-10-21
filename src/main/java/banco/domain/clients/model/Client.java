@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,7 +21,7 @@ public class Client {
     private String name;
     private String username;
     private String email;
-    private List<BankCard> cards;
+    private List<BankCard> cards = Collections.emptyList();
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 

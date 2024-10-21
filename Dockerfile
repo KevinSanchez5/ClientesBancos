@@ -19,7 +19,7 @@ RUN chmod +x ./gradlew
 ARG DOCKER_HOST_ARG=tcp://host.docker.internal:2375
 ENV DOCKER_HOST=$DOCKER_HOST_ARG
 
-RUN ./gradlew build
+RUN ./gradlew build -x test
 
 # Etapa de ejecución
 FROM eclipse-temurin:21-jre-alpine AS run

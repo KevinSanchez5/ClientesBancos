@@ -14,6 +14,11 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+/**
+ * Implementación del repositorio local de clientes
+ *
+ * @constructor crea una instancia con el LocalDataBaseManager
+ */
 public class ImplClientRepository implements ClientRepository {
 
     private final Logger logger = LoggerFactory.getLogger(ImplClientRepository.class);
@@ -31,10 +36,21 @@ public class ImplClientRepository implements ClientRepository {
         return instance;
     }
 
+    /**
+     * Constructor privado
+     * @param localDatabase el manejador de la base de datos local
+     */
     private ImplClientRepository(LocalDatabaseManager localDatabase) {
         this.localDatabase = localDatabase;
     }
 
+
+    /**
+     * Busca todos los clientes en la base de datos local.
+     *
+     * @return CompletableFuture de una liste de clientes
+     * o una lista vacia si no hay nada
+     */
     @Override
     public CompletableFuture<List<Client>> findAll() {
         logger.debug("Buscando todos los clientes");
@@ -70,7 +86,13 @@ public class ImplClientRepository implements ClientRepository {
         }, executorService);
     }
 
-
+    /**
+     * Busca un cliente por su id en la base de datos local.
+     *
+     * @param id el id del cliente a buscar
+     * @return CompletableFuture de un cliente
+     * o null si no se encuentra
+     */
     public CompletableFuture<Client> findById(Long id) {
         logger.debug("Buscando cliente con id: {}", id);
         String query = "SELECT * FROM clients WHERE id =?";
@@ -102,6 +124,11 @@ public class ImplClientRepository implements ClientRepository {
         });
     }
 
+    /**
+     * Guarda un cliente en la base de datos local.
+     * @param client el cliente a guardar
+     * @return CompletableFuture de un cliente
+     */
     @Override
     public CompletableFuture<Client> save(Client client) {
         logger.debug("Guardando cliente: {}", client);
@@ -155,7 +182,13 @@ public class ImplClientRepository implements ClientRepository {
         }, executorService);
     }
 
-
+    /**
+     * Actualiza un cliente en la base de datos local.
+     * @param id el id del cliente a actualizar
+     * @param client el cliente con los datos actualizados
+     * @return CompletableFuture de un cliente
+     * o null si no se actualiza
+     */
     @Override
     public CompletableFuture<Client> update(Long id, Client client) {
         logger.debug("Actualizando cliente con id: {} con datos: {}", id, client);
@@ -212,7 +245,11 @@ public class ImplClientRepository implements ClientRepository {
         }, executorService);
     }
 
-
+    /**
+     * Elimina un cliente de la base de datos local.
+     * @param id el id del cliente a eliminar
+     * @return CompletableFuture de void
+     */
     @Override
     public CompletableFuture<Void> delete(Long id) {
         logger.debug("Eliminando cliente con id: {}", id);
@@ -251,7 +288,11 @@ public class ImplClientRepository implements ClientRepository {
     }
 
 
-
+    /**
+     * Busca todas las tarjetas de un cliente por su id en la base de datos local.
+     * @param clientId el id del cliente
+     * @return lista de tarjetas
+     */
     public List<BankCard> findAllCardsByClientId(Long clientId) {
         List<BankCard> cards = new ArrayList<>();
         try (var conn = localDatabase.getConnection();
@@ -277,7 +318,11 @@ public class ImplClientRepository implements ClientRepository {
         return cards;
     }
 
-
+    /**
+     * Guarda una tarjeta de crédito en la base de datos local.
+     * @param bankCard la tarjeta de crédito a guardar
+     * @return CompletableFuture de la tarjeta de crédito guardada
+     */
     public CompletableFuture<BankCard> saveBankCard(BankCard bankCard) {
         logger.debug("Guardando tarjeta: {}", bankCard);
         String sql = "INSERT INTO bank_cards (number, client_id, expiration_date) VALUES (?, ?, ?)";
@@ -298,6 +343,12 @@ public class ImplClientRepository implements ClientRepository {
         }, executorService);
     }
 
+    /**
+     * Actualiza una tarjeta de crédito en la base de datos local.
+     * @param cardNumber el número de la tarjeta a actualizar
+     * @param updatedBankCard la tarjeta de crédito con los datos actualizados
+     * @return CompletableFuture de void
+     */
     public CompletableFuture<Void> updateBankCard(String cardNumber, BankCard updatedBankCard) {
         logger.debug("Actualizando tarjeta con número: {}", cardNumber);
         String query = "UPDATE bank_cards SET number = ?, client_id = ?, expiration_date = ? WHERE number = ?";
@@ -321,6 +372,11 @@ public class ImplClientRepository implements ClientRepository {
         }, executorService);
     }
 
+    /**
+     * Elimina una tarjeta de crédito de la base de datos local.
+     * @param cardNumber el número de la tarjeta a eliminar
+     * @return CompletableFuture de void
+     */
     public CompletableFuture<Void> deleteBankCard(String cardNumber) {
         logger.debug("Borrando tarjeta con número: {}", cardNumber);
         String query = "DELETE FROM bank_cards WHERE number = ?";
@@ -342,5 +398,95 @@ public class ImplClientRepository implements ClientRepository {
         }, executorService);
     }
 
+    /**
+     * Refresca los clientes y las tarjetas en la base de datos local.
+     * @param clients lista de clientes
+     * @param bankCards lista de tarjetas
+     * @return CompletableFuture de void
+     */
+    public CompletableFuture<Void> refreshClientsAndCards(List<Client> clients, List<BankCard> bankCards) {
+        logger.debug("Refrescando clientes y tarjetas");
+        return CompletableFuture.runAsync(() -> {
+            Connection conn = null;
+            try {
+                conn = localDatabase.getConnection();
+                conn.setAutoCommit(false);
+
+                // Eliminar todas las tarjetas
+                String deleteCardsSql = "DELETE FROM bank_cards";
+                try (PreparedStatement deleteCardsStmt = conn.prepareStatement(deleteCardsSql)) {
+                    deleteCardsStmt.executeUpdate();
+                }
+
+                // Eliminar todos los clientes
+                String deleteClientsSql = "DELETE FROM clients";
+                try (PreparedStatement deleteClientsStmt = conn.prepareStatement(deleteClientsSql)) {
+                    deleteClientsStmt.executeUpdate();
+                }
+
+                // Insertar nuevos clientes
+                String clientSql = "INSERT INTO clients (name, username, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?) RETURNING id";
+                for (Client client : clients) {
+                    Long clientId = null;
+                    try (PreparedStatement clientStmt = conn.prepareStatement(clientSql)) {
+                        clientStmt.setString(1, client.getName());
+                        clientStmt.setString(2, client.getUsername());
+                        clientStmt.setString(3, client.getEmail());
+                        clientStmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+                        clientStmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+
+                        try (ResultSet rs = clientStmt.executeQuery()) {
+                            if (rs.next()) {
+                                clientId = rs.getLong("id");
+                            }
+                        }
+                    }
+
+                    // Insertar las tarjetas asociadas al cliente
+                    if (clientId != null) {
+                        String cardSql = "INSERT INTO bank_cards (number, client_id, expiration_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?)";
+                        for (BankCard card : client.getCards()) {
+                            try (PreparedStatement cardStmt = conn.prepareStatement(cardSql)) {
+                                cardStmt.setString(1, card.getNumber());
+                                cardStmt.setLong(2, clientId);
+                                cardStmt.setDate(3, Date.valueOf(card.getExpirationDate()));
+                                cardStmt.setTimestamp(4, Timestamp.valueOf(LocalDateTime.now()));
+                                cardStmt.setTimestamp(5, Timestamp.valueOf(LocalDateTime.now()));
+                                cardStmt.executeUpdate();
+                            }
+                        }
+                    }
+                }
+
+                conn.commit();
+            } catch (SQLException e) {
+                logger.error("Error al refrescar clientes y tarjetas", e);
+                if (conn != null) {
+                    try {
+                        conn.rollback();
+                    } catch (SQLException rollbackEx) {
+                        logger.error("Error durante el rollback al refrescar clientes y tarjetas", rollbackEx);
+                    }
+                }
+            } finally {
+                if (conn != null) {
+                    try {
+                        conn.setAutoCommit(true);
+                        conn.close(); // Cerrar conexión
+                    } catch (SQLException ex) {
+                        logger.error("Error al restaurar auto-commit o cerrar conexión después de refrescar clientes y tarjetas", ex);
+                    }
+                }
+            }
+        }, executorService);
+    }
+
+// Para ejecutar el refresco
+//    ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+//scheduler.scheduleAtFixedRate(() -> {
+//        List<Client> newClients = remoteClientRepository.findAll();
+//                List<BankCard> newCards = remoteBankCardRepository.findAll();
+//                        clientRepository.refreshClientsAndCards(newClients, newCards);
+//    }, 0, 30, TimeUnit.SECONDS);
 
 }

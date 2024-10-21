@@ -179,51 +179,79 @@ classDiagram
 ```mermaid
 classDiagram
     direction LR
-    class Repository ~T,ID~ {
-        <<interface>>
-        +List~T~ getAll()
-        +Optional~T~ getById(ID id)
-        +T create(T entity)
-        +T update(ID id, T entity)
-        +Boolean delete(ID id)
+    class Repository ~ID,T~ {
+        CompletableFuture ~List ~T~~ findAll()
+        CompletableFuture ~T~ findById(ID id)
+        CompletableFuture ~T~ save(~T~ object)
+        CompletableFuture ~T~ update(ID id, ~T~ object)
+        CompletableFuture ~Boolean~ delete(ID id)
+
     }
 
-    class ClienteRepository ~Cliente, Long~  {
+    Repository ..|> BankCardRepository
+
+    class BankCardRepository ~String, BankCard~  {
          <<interface>>
+            CompletableFuture ~List~BankCard~~ getBankCardsByClientId(Long client)
+
     }
 
-    class ClienteRepositoryImpl {
-        -Logger logger
-        -LocalDataBaseManager dataBaseManager
+    BankCardRepository --> BankCardRepositoryImpl
 
-        +ClienteRepositoryImpl(LocalDataBaseManager dataBaseManager)
-        +List<Cliente> getAll()
-        +Optional<Cliente> getById(long id)
-        +Cliente create(Cliente cliente)
-        +Cliente update(long id, Cliente cliente)
-        +boolean delete(long id)
+    class BankCardRepositoryImpl ~String, BankCard~ {
+        - Logger
+        - RemoteDatabaseManager
+        - BankCardRepositoryImpl
+
+        CompletableFuture ~List ~BankCard~~ findAll()
+        CompletableFuture ~BankCard~ findById(String id)
+        CompletableFuture ~BankCard~ save(~BankCard~ object)
+        CompletableFuture ~BankCard~ update(String id, ~BankCard~ object)
+        CompletableFuture ~Boolean~ delete(String id)
+        CompletableFuture ~List ~BankCard~~ getBankCardsByClientId(Long clientId)
     }
 
-    class TarjetaRemoteRepository ~Tarjeta, Long~  {
-         <<interface>>
+```
+
+```mermaid
+classDiagram
+    direction LR
+    class Repository ~ID,T~ {
+        CompletableFuture ~List ~T~~ findAll()
+        CompletableFuture ~T~ findById(ID id)
+        CompletableFuture ~T~ save(~T~ object)
+        CompletableFuture ~T~ update(ID id, ~T~ object)
+        CompletableFuture ~Boolean~ delete(ID id)
+
     }
 
-    class TarjetaRemoteRepositoryImpl {
-        -RemoteDataBaseManager remoteDbManager
-        -Logger logger
+    Repository ..|> ClientRepository
 
-        +TarjetaRemoteRepositoryImpl(RemoteDataBaseManager remoteDbManager)
-        +List<Tarjeta> getAll()
-        +Optional<Tarjeta> getById(Long id)
-        +Tarjeta create(Tarjeta tarjeta)
-        +Tarjeta update(Long id, Tarjeta tarjeta)
-        +Boolean delete(Long id)
+    class ClientRepository ~Long, Client~ {
+        CompletableFuture ~BankCard~ saveBankCard(~BankCard~ bankCard)
+        CompletableFuture ~Void~ updateBankCard(String number, ~BankCard~ bankCard)
+        CompletableFuture ~Void~ deleteBankCard(String number)
     }
 
-    Repository ..|> TarjetaRemoteRepository
-    Repository ..|> ClienteRepository
-    TarjetaRemoteRepository  ..|> TarjetaRemoteRepositoryImpl
-    ClienteRepository ..|>  ClienteRepositoryImpl
+    ClientRepository --> ClientRepositoryImpl
+
+    class ClientRepositoryImpl {
+        - Logger logger
+        - static ImplClientRepository instance
+        - LocalDatabaseManager localDatabase
+        - ExecutorService executorService
+        + CompletableFuture~List~ findAll()
+        + CompletableFuture~Client~ findById(Long id)
+        + CompletableFuture~Client~ save(Client client)
+        + CompletableFuture~Client~ update(Long id, Client client)
+        + CompletableFuture~Void~ delete(Long id)
+        + List~BankCard~ findAllCardsByClientId(Long clientId)
+        + CompletableFuture~BankCard~ saveBankCard(BankCard bankCard)
+        + CompletableFuture~Void~ updateBankCard(String cardNumber, BankCard updatedBankCard)
+        + static ImplClientRepository getInstance(LocalDatabaseManager local)
+    }
+    
+
 
 ```
 

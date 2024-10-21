@@ -150,30 +150,24 @@ classDiagram
     direction LR
     class Storage ~T~   {
         <<interface>>
-        +Observable<T> importFile(File file)
-        +void exportFile(File file, Observable<T> items)
+        +Flux~T~ importFile(File file)
+        +Mono~Void~ exportFile(File file, List~T~ elemts)
     }
 
-
-    class StorageCsv ~T~ {
-        <<interface>>
+    class StorageClient~Tarjeta~ {
+        - Logger
+        +Flux~Client~ importFile(File file)
+        +Mono~Void~ exportFile(File file, List~Client~ clients)
     }
 
-    class StorageTarjetaCsvImpl~Tarjeta~ {
-        +Observable<Tarjeta> importFile(File file)
-        +void exportFile(File file, Observable<Tarjeta> items)
-        -Tarjeta parseLine(String[] parts)
+    class StorageCard~Usuario~ {
+        - Logger
+        +Flux~Card~ importFile(File file)
+        +Mono~Void~ exportFile(File file, List~card~ cards)
     }
 
-    class StorageUsuarioCsvImpl~Usuario~ {
-        +Observable<Tarjeta> importFile(File file)
-        +void exportFile(File file, Observable<Tarjeta> items)
-        -Tarjeta parseLine(String[] parts)
-    }
-
-    Storage ..|> StorageCsv
-    StorageCsv ..|> StorageTarjetaCsvImpl
-     StorageCsv ..|> StorageUsuarioCsvImpl
+    Storage ..|> StorageCard
+     Storage ..|> StorageClient
 
 ```
 

@@ -147,33 +147,26 @@ de clientes y tarjetas. A continuación se detallan los formatos y sus respectiv
 
 ```mermaid
 classDiagram
-    direction LR
     class Storage ~T~   {
         <<interface>>
-        +Observable<T> importFile(File file)
-        +void exportFile(File file, Observable<T> items)
+        +Flux~T~ importFile(File file)
+        +Mono~Void~ exportFile(File file, List~T~ elemts)
     }
 
-
-    class StorageCsv ~T~ {
-        <<interface>>
+    class StorageClient~Tarjeta~ {
+        - Logger
+        +Flux~Client~ importFile(File file)
+        +Mono~Void~ exportFile(File file, List~Client~ clients)
     }
 
-    class StorageTarjetaCsvImpl~Tarjeta~ {
-        +Observable<Tarjeta> importFile(File file)
-        +void exportFile(File file, Observable<Tarjeta> items)
-        -Tarjeta parseLine(String[] parts)
+    class StorageCard~Usuario~ {
+        - Logger
+        +Flux~Card~ importFile(File file)
+        +Mono~Void~ exportFile(File file, List~card~ cards)
     }
 
-    class StorageUsuarioCsvImpl~Usuario~ {
-        +Observable<Tarjeta> importFile(File file)
-        +void exportFile(File file, Observable<Tarjeta> items)
-        -Tarjeta parseLine(String[] parts)
-    }
-
-    Storage ..|> StorageCsv
-    StorageCsv ..|> StorageTarjetaCsvImpl
-     StorageCsv ..|> StorageUsuarioCsvImpl
+    Storage ..|> StorageCard
+     Storage ..|> StorageClient
 
 ```
 
@@ -182,117 +175,159 @@ classDiagram
 - **Patrón Repositorio**: La abstracción del repositorio facilita el manejo de datos entre la aplicación y las bases de datos (PostgreSQL y SQLite).
 - **Interfaces Genéricas**: El repositorio sigue un enfoque genérico para manejar entidades como `Cliente` y `Tarjeta`.
 
+### BankCard
+
 ```mermaid
 classDiagram
-    direction LR
-    class Repository ~T,ID~ {
-        <<interface>>
-        +List~T~ getAll()
-        +Optional~T~ getById(ID id)
-        +T create(T entity)
-        +T update(ID id, T entity)
-        +Boolean delete(ID id)
+    class Repository ~ID,T~ {
+        CompletableFuture ~List ~T~~ findAll()
+        CompletableFuture ~T~ findById(ID id)
+        CompletableFuture ~T~ save(~T~ object)
+        CompletableFuture ~T~ update(ID id, ~T~ object)
+        CompletableFuture ~Boolean~ delete(ID id)
+
     }
 
-    class ClienteRepository ~Cliente, Long~  {
+    Repository ..|> BankCardRepository
+
+    class BankCardRepository ~String, BankCard~  {
          <<interface>>
+            CompletableFuture ~List~BankCard~~ getBankCardsByClientId(Long client)
+
     }
 
-    class ClienteRepositoryImpl {
-        -Logger logger
-        -LocalDataBaseManager dataBaseManager
+    BankCardRepository --> BankCardRepositoryImpl
 
-        +ClienteRepositoryImpl(LocalDataBaseManager dataBaseManager)
-        +List<Cliente> getAll()
-        +Optional<Cliente> getById(long id)
-        +Cliente create(Cliente cliente)
-        +Cliente update(long id, Cliente cliente)
-        +boolean delete(long id)
+    class BankCardRepositoryImpl ~String, BankCard~ {
+        - Logger
+        - RemoteDatabaseManager
+        - BankCardRepositoryImpl
+
+        CompletableFuture ~List ~BankCard~~ findAll()
+        CompletableFuture ~BankCard~ findById(String id)
+        CompletableFuture ~BankCard~ save(~BankCard~ object)
+        CompletableFuture ~BankCard~ update(String id, ~BankCard~ object)
+        CompletableFuture ~Boolean~ delete(String id)
+        CompletableFuture ~List ~BankCard~~ getBankCardsByClientId(Long clientId)
     }
 
-    class TarjetaRemoteRepository ~Tarjeta, Long~  {
-         <<interface>>
+```
+
+### Client
+
+```mermaid
+classDiagram
+    class Repository ~ID,T~ {
+        CompletableFuture ~List ~T~~ findAll()
+        CompletableFuture ~T~ findById(ID id)
+        CompletableFuture ~T~ save(~T~ object)
+        CompletableFuture ~T~ update(ID id, ~T~ object)
+        CompletableFuture ~Boolean~ delete(ID id)
+
     }
 
-    class TarjetaRemoteRepositoryImpl {
-        -RemoteDataBaseManager remoteDbManager
-        -Logger logger
+    Repository ..|> ClientRepository
 
-        +TarjetaRemoteRepositoryImpl(RemoteDataBaseManager remoteDbManager)
-        +List<Tarjeta> getAll()
-        +Optional<Tarjeta> getById(Long id)
-        +Tarjeta create(Tarjeta tarjeta)
-        +Tarjeta update(Long id, Tarjeta tarjeta)
-        +Boolean delete(Long id)
+    class ClientRepository ~Long, Client~ {
+        CompletableFuture ~BankCard~ saveBankCard(~BankCard~ bankCard)
+        CompletableFuture ~Void~ updateBankCard(String number, ~BankCard~ bankCard)
+        CompletableFuture ~Void~ deleteBankCard(String number)
     }
 
-    Repository ..|> TarjetaRemoteRepository
-    Repository ..|> ClienteRepository
-    TarjetaRemoteRepository  ..|> TarjetaRemoteRepositoryImpl
-    ClienteRepository ..|>  ClienteRepositoryImpl
+    ClientRepository --> ClientRepositoryImpl
+
+    class ClientRepositoryImpl {
+        - Logger logger
+        - static ImplClientRepository instance
+        - LocalDatabaseManager localDatabase
+        - ExecutorService executorService
+        + CompletableFuture~List~ findAll()
+        + CompletableFuture~Client~ findById(Long id)
+        + CompletableFuture~Client~ save(Client client)
+        + CompletableFuture~Client~ update(Long id, Client client)
+        + CompletableFuture~Void~ delete(Long id)
+        + List~BankCard~ findAllCardsByClientId(Long clientId)
+        + CompletableFuture~BankCard~ saveBankCard(BankCard bankCard)
+        + CompletableFuture~Void~ updateBankCard(String cardNumber, BankCard updatedBankCard)
+        + static ImplClientRepository getInstance(LocalDatabaseManager local)
+    }
+    
+
+
+```
+
+### Remote
+
+```mermaid
+classDiagram
+    class Repository ~ID,T~ {
+        CompletableFuture ~List ~T~~ findAll()
+        CompletableFuture ~T~ findById(ID id)
+        CompletableFuture ~T~ save(~T~ object)
+        CompletableFuture ~T~ update(ID id, ~T~ object)
+        CompletableFuture ~Boolean~ delete(ID id)
+
+    }
+
+    Repository ..|> ClientRepository
+
+    class ClientRepository ~Long, Client~ {
+        CompletableFuture ~BankCard~ saveBankCard(~BankCard~ bankCard)
+        CompletableFuture ~Void~ updateBankCard(String number, ~BankCard~ bankCard)
+        CompletableFuture ~Void~ deleteBankCard(String number)
+    }
+
+    ClientRepository --> ClientRemoteRepository
+
+    class ClientRemoteRepository {
+        - ClientApiRest clientApiRest
+        - Logger logger
+        + ClientRemoteRepository(ClientApiRest clientApiRest)
+        + List<Client> getAll()
+        + Client getById(int id)
+        + Client createClient(Client client)
+        + Client updateClient(Client client)
+        + void deleteClient(int id)
+    }
+    
+
 
 ```
 
 ## Caché
 
-- La aplicación utiliza una implementación de caché personalizada, `CacheImpl`, que emplea un **LinkedHashMap** para almacenar elementos. 
-- La caché se vacía de manera eficiente cuando se alcanza el límite de elementos, manteniendo sólo los más recientes.
+La caché implementada por `ClientesCacheImpl` se utiliza para almacenar y gestionar datos de clientes de forma eficiente.
 
 ```mermaid
 classDiagram
-    class Cache ~K, V~{
-        <<interface>>
-        +V get(K key)
-        +void put(K key, V value)
-        +void remove(K key)
-        +void clear()
-        +int size()
-        +Collection~V~ values()
-        +boolean isEmpty()
-        +boolean isNotEmpty()
-        +boolean containsKey(K id)
-    }
-
-    class CacheTarjeta ~K, V~ {
-        + int TARJETA_CACHE_SIZE = 5
-    }
-
-    class CacheImpl ~K, V~ {
-        - int cacheSize
-        - LinkedHashMap~K, V~ cache
-        + CacheImpl(int cacheSize)
-        + V get(K key)
+    direction LR
+    class Cache ~K, V~ {
+         <<interface>>
         + void put(K key, V value)
+        + V get(K key)
         + void remove(K key)
         + void clear()
-        + int size()
-        + Collection~V~ values()
-        + boolean isEmpty()
-        + boolean isNotEmpty()
-        + boolean containsKey(K key)
+        + void shutdown()
     }
 
-    
+    Cache ..|> ClientesCache
 
-    class CacheUsuario ~K, V~ {
-        + int TARJETA_CACHE_SIZE = 5
+    class ClientesCache ~Long, Client~ {
     }
 
-    class CacheUsuarioImpl {
-        + CacheUsuarioImpl(int cacheSize)
-    }
+    ClientesCache --> ClientesCacheImpl
 
-    class CacheTarjetaImpl {
-        + CacheUsuarioImpl(int cacheSize)
+    class ClientesCacheImpl {
+        - Logger logger
+        - Map<Long, Client> cache
+        - ScheduledExecutorService cleaner
+        + ClientesCacheImpl(int maxSize)
+        + void put(Long key, Client value)
+        + Client get(Long key)
+        + void remove(Long key)
+        + void clear()
+        + void shutdown()
     }
-
-    Cache ..|> CacheImpl
-    Cache --> CacheTarjeta
-    Cache --> CacheUsuario
-    CacheImpl ..|> CacheUsuarioImpl
-    CacheUsuario ..|> CacheUsuarioImpl
-    CacheImpl ..|> CacheTarjetaImpl
-    CacheTarjeta ..|> CacheTarjetaImpl
 
 
 ```

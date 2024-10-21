@@ -1,0 +1,3 @@
+id,name,username,email,createdAt,updatedAt
+1,John Doe,johndoe,john.doe@example.com,2024-10-21T12:03:20.449963700,2024-10-21T12:03:20.449963700
+2,Jane Smith,janesmith,jane.smith@example.com,2024-10-21T12:03:20.449963700,2024-10-21T12:03:20.449963700

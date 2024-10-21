@@ -2,6 +2,7 @@ package banco.domain.clients.validator;
 
 import banco.domain.clients.exceptions.ClientException;
 import banco.domain.clients.exceptions.ClientExceptionBadRequest;
+import banco.domain.clients.model.Client;
 import banco.domain.clients.validator.ClientValidator;
 import org.junit.jupiter.api.Test;
 
@@ -69,6 +70,20 @@ class ClientValidatorTest {
         var result = assertThrows(ClientExceptionBadRequest.class, () -> validator.validateEmail(email));
         //Assert
         assertEquals("El email del cliente no es valido", result.getMessage());
+
+    }
+
+    @Test
+    void validate() {
+        //Arrange
+       Client client = new Client(1L, "John Doe", "userTest" ,"example@example.com", null, null, null);
+        //Act
+        var result = assertDoesNotThrow(() -> validator.validate(client));
+        //Assert
+        assertAll(
+                () -> assertDoesNotThrow(() -> ClientExceptionBadRequest.class),
+                () -> assertNotNull(result)
+        );
 
     }
 }

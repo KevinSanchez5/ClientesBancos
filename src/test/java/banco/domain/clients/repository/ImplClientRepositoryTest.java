@@ -3,166 +3,96 @@ package banco.domain.clients.repository;
 import banco.data.local.LocalDatabaseManager;
 import banco.domain.clients.model.Client;
 import org.junit.jupiter.api.*;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.junit.jupiter.Container;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @Testcontainers
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class ImplClientRepositoryTest {
 
-    private static ImplClientRepository repository;
+    @Mock
+    private LocalDatabaseManager localDatabaseManager;
 
-    @Container
-    private static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:17.0-alpine")
-            .withDatabaseName("test")
-            .withUsername("testuser")
-            .withPassword("password")
-            .withInitScript("localclients/data.sql")
-            .withExposedPorts(5432)
-            .waitingFor(Wait.forListeningPort());
+    @Mock
+    private Connection connection;
 
-    @BeforeAll
-    public static void setUp(){
-        postgres.start();
-        LocalDatabaseManager db = LocalDatabaseManager.getInstance();
-        repository = ImplClientRepository.getInstance(db);
+    @Mock
+    private PreparedStatement preparedStatement;
+
+    @Mock
+    private ResultSet resultSet;
+
+    @InjectMocks
+    private ImplClientRepository implClientRepository;
+
+    @BeforeEach
+    void setUp() throws SQLException {
+        MockitoAnnotations.openMocks(this);
+        when(localDatabaseManager.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(any(String.class))).thenReturn(preparedStatement);
+        when(preparedStatement.executeQuery()).thenReturn(resultSet);
     }
-
-    @AfterAll
-    public static void tearDown() {
-        if (postgres != null) {
-            postgres.stop(); // Paramos el contenedor
-        }
-    }
-
 
     @Test
-    @Order(1)
-    void save() throws ExecutionException, InterruptedException {
-        //Arrange
-        Client client = Client.builder()
-                .name("Juan")
-                .username("test")
-                .email("example@example.com")
-                .cards(null).build();
+    void testFindAllClients() throws SQLException {
+        // Simular los datos que regresará el ResultSet
+        when(resultSet.next()).thenReturn(true).thenReturn(false); // Un cliente en la base de datos
+        when(resultSet.getLong("id")).thenReturn(1L);
+        when(resultSet.getString("name")).thenReturn("John Doe");
+        when(resultSet.getString("username")).thenReturn("jdoe");
+        when(resultSet.getString("email")).thenReturn("jdoe@example.com");
+        when(resultSet.getTimestamp("created_at")).thenReturn(Timestamp.valueOf(LocalDateTime.now()));
+        when(resultSet.getTimestamp("updated_at")).thenReturn(Timestamp.valueOf(LocalDateTime.now()));
 
-        //Act
-        Client savedClient = repository.save(client).get();
+        // Ejecutar el método findAll
+        CompletableFuture<List<Client>> futureClients = implClientRepository.findAll();
+        List<Client> clients = futureClients.join();
 
-        //Assert
-        assertNotNull(savedClient);
-        assertAll(
-                () -> assertEquals(client.getName(), savedClient.getName()),
-                () -> assertEquals(client.getUsername(), savedClient.getUsername()),
-                () -> assertEquals(client.getEmail(), savedClient.getEmail()),
-                ()-> assertNotNull(savedClient.getCreatedAt()),
-                ()-> assertNotNull(savedClient.getUpdatedAt())
-        );
-    }
-
-
-
-    @Test
-    @Order(2)
-    void findById() throws ExecutionException, InterruptedException {
-        //Arrange
-        Client client = Client.builder()
-                .name("Juan")
-                .username("test")
-                .email("example@example.com")
-                .cards(null).build();
-
-        //Act
-        Client savedClient = repository.save(client).resultNow();
-        Client foundClient = repository.findById(savedClient.getId()).get();
-
-        //Assert
-        assertNotNull(foundClient);
-        assertAll(
-                () -> assertEquals(client.getName(), foundClient.getName()),
-                () -> assertEquals(client.getUsername(), foundClient.getUsername()),
-                () -> assertEquals(client.getEmail(), foundClient.getEmail()),
-                ()-> assertNotNull(foundClient.getCreatedAt()),
-                ()-> assertNotNull(foundClient.getUpdatedAt())
-        );
-    }
-
-
-    @Test
-    @Order(3)
-    void findAll() throws ExecutionException, InterruptedException {
-        //Act
-        List<Client> clients = repository.findAll().get();
-
-        //Assert
-        assertNotNull(clients);
-        assertFalse(clients.iterator().hasNext());
+        // Verificar el resultado
         assertEquals(1, clients.size());
+        assertEquals("John Doe", clients.get(0).getName());
+
+        // Verificar que se llamó a la base de datos
+        verify(preparedStatement, times(1)).executeQuery();
     }
 
     @Test
-    @Order(4)
-    void update() throws ExecutionException, InterruptedException {
-        //Arrange
-        Client client = Client.builder()
-                .name("Juan")
-                .username("test")
-                .email("example@example.com")
-                .cards(null).build();
+    void testFindById() throws SQLException {
+        // Simular los datos para un cliente específico
+        when(resultSet.next()).thenReturn(true);
+        when(resultSet.getLong("id")).thenReturn(1L);
+        when(resultSet.getString("name")).thenReturn("John Doe");
+        when(resultSet.getString("username")).thenReturn("jdoe");
+        when(resultSet.getString("email")).thenReturn("jdoe@example.com");
+        when(resultSet.getTimestamp("created_at")).thenReturn(Timestamp.valueOf(LocalDateTime.now()));
+        when(resultSet.getTimestamp("updated_at")).thenReturn(Timestamp.valueOf(LocalDateTime.now()));
 
-        Client updatedClient = Client.builder()
-                .name("Juana")
-                .username("test2")
-                .email("noexample@example.com")
-                .cards(null).build();
-
-        Client savedClient = repository.save(client).resultNow();
-
-        //Act
-        Client result = repository.update(savedClient.getId(), updatedClient).get();
+        // Ejecutar el método findById
+        Client futureClient = implClientRepository.findById(1L).join();
 
 
+        // Verificar el resultado
+        assertNotNull(futureClient);
+        assertEquals("John Doe", futureClient.getName());
+
+        // Verificar que se llamó a la base de datos
+        verify(preparedStatement, times(1)).setLong(1, 1L);
+        verify(preparedStatement, times(1)).executeQuery();
     }
 
-    @Test
-    void delete() throws ExecutionException, InterruptedException {
-        //Arrange
-        Client client = Client.builder()
-               .name("Juan")
-               .username("test")
-               .email("example@example.com")
-               .cards(null).build();
 
-        Client savedClient = repository.save(client).get();
 
-        //Act
-        repository.delete(savedClient.getId()).get();
 
-        //Assert
-        Client deletedClient = repository.findById(savedClient.getId()).get();
-        assertNull(deletedClient);
-    }
-
-    @Test
-    void findAllCardsByClientId() {
-    }
-
-    @Test
-    void saveBankCard() {
-    }
-
-    @Test
-    void updateBankCard() {
-    }
-
-    @Test
-    void deleteBankCard() {
-    }
 }

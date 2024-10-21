@@ -17,7 +17,7 @@ public class LocalDatabaseManager {
 
     public static synchronized LocalDatabaseManager getInstance() {
         if (instance == null) {
-            instance = new LocalDatabaseManager();
+            instance = new LocalDatabaseManager(false);
         }
         return instance;
     }
@@ -28,29 +28,31 @@ public class LocalDatabaseManager {
      * Inserta toda la configuracion de hickary a partir de un archivo de propiedades
      * @throws RuntimeException si no se puede cargar el archivo de propiedades
      */
-    private LocalDatabaseManager() {
-        try {
-            Properties properties = new Properties();
-            try (InputStream input = getClass().getClassLoader().getResourceAsStream("localclients/database.properties")) {
-                if (input == null) {
-                    throw new RuntimeException("No se pudo encontrar el archivo database.properties");
+    private LocalDatabaseManager(Boolean forTesting) {
+        if(!forTesting) {
+            try {
+                Properties properties = new Properties();
+                try (InputStream input = getClass().getClassLoader().getResourceAsStream("localclients/database.properties")) {
+                    if (input == null) {
+                        throw new RuntimeException("No se pudo encontrar el archivo database.properties");
+                    }
+                    properties.load(input);
                 }
-                properties.load(input);
+
+                HikariConfig config = new HikariConfig();
+                config.setJdbcUrl(properties.getProperty("db.url"));
+                config.setMinimumIdle(1);
+                config.setMaximumPoolSize(Integer.parseInt(properties.getProperty("db.pool.size")));
+                config.setConnectionTimeout(Long.parseLong(properties.getProperty("db.connectionTimeout")));
+                config.setIdleTimeout(Long.parseLong(properties.getProperty("db.idleTimeout")));
+                config.setMaxLifetime(Long.parseLong(properties.getProperty("db.maxLifetime")));
+
+
+                dataSource = new HikariDataSource(config);
+
+            } catch (IOException e) {
+                throw new RuntimeException("Error al cargar las propiedades de la base de datos", e);
             }
-
-            HikariConfig config = new HikariConfig();
-            config.setJdbcUrl(properties.getProperty("db.url"));
-            config.setMinimumIdle(1);
-            config.setMaximumPoolSize(Integer.parseInt(properties.getProperty("db.pool.size")));
-            config.setConnectionTimeout(Long.parseLong(properties.getProperty("db.connectionTimeout")));
-            config.setIdleTimeout(Long.parseLong(properties.getProperty("db.idleTimeout")));
-            config.setMaxLifetime(Long.parseLong(properties.getProperty("db.maxLifetime")));
-
-
-            dataSource = new HikariDataSource(config);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Error al cargar las propiedades de la base de datos", e);
         }
     }
 
@@ -62,7 +64,7 @@ public class LocalDatabaseManager {
             String url, String username, String password
     ) {
         if (instance == null) {
-            instance = new LocalDatabaseManager();
+            instance = new LocalDatabaseManager(true);
             HikariConfig config = new HikariConfig();
             config.setJdbcUrl(url);
             config.setUsername(username);

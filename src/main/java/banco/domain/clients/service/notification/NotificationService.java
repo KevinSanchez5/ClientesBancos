@@ -59,5 +59,14 @@ public class NotificationService {
             log.info("✉ Notificacion: " + event.toString());
         });
     }
+
+    /**
+     * Metodo para finalizar el flujo de notificaciones
+     */
+    public void complete() {
+        if (fluxSink != null) {
+            fluxSink.complete();
+        }
+    }
 }
 

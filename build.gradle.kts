@@ -64,6 +64,9 @@ dependencies {
     implementation("com.jakewharton.retrofit:retrofit2-reactor-adapter:2.1.0") // Reactor con Retrofit
     implementation("com.squareup.retrofit2:adapter-rxjava3:2.11.0") // RxJava3 con Retrofit
 
+    //StepVerifier
+    testImplementation("io.projectreactor:reactor-test:3.4.12")
+
 
 }
 

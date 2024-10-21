@@ -15,19 +15,13 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 
-/**
- * Implementación del repositorio de tarjetas de crédito.
- *
- * @property db El gestor de la base de datos remota utilizado para manejar conexiones y ejecutar consultas.
- * @constructor Crea una instancia de `BankCardRepositoryImpl` con el gestor de base de datos proporcionado.
- */
 public class BankCardRepositoryImpl implements BankCardRepository {
     private final Logger logger = LoggerFactory.getLogger(BankCardRepositoryImpl.class);
     private final RemoteDatabaseManager db;
     private static BankCardRepositoryImpl instance;
 
     /**
-     * Constructor para la clase `BankCardRepositoryImpl`.
+     * Constructor para la clase {@code BankCardRepositoryImpl}.
      *
      * @param db El gestor de base de datos remota proporcionado.
      */
@@ -36,10 +30,10 @@ public class BankCardRepositoryImpl implements BankCardRepository {
     }
 
     /**
-     * Devuelve una instancia única de `BankCardRepositoryImpl` utilizando el patrón Singleton.
+     * Devuelve una instancia única de {@code BankCardRepositoryImpl} utilizando el patrón Singleton.
      *
      * @param db El gestor de base de datos remota proporcionado.
-     * @return La instancia única de `BankCardRepositoryImpl`.
+     * @return La instancia única de {@code BankCardRepositoryImpl}.
      */
     public static BankCardRepositoryImpl getInstance(RemoteDatabaseManager db) {
         if (instance == null) {
@@ -51,8 +45,8 @@ public class BankCardRepositoryImpl implements BankCardRepository {
     /**
      * Busca todas las tarjetas de crédito en la base de datos.
      *
-     * @return Un `CompletableFuture` que contiene una lista de todas las tarjetas de crédito encontradas,
-     * o una lista vacía si no se encuentra ninguna.
+     * @return Un {@code CompletableFuture} que contiene una lista de todas las tarjetas de crédito encontradas,
+     *         o una lista vacía si no se encuentra ninguna.
      */
     @Override
     public CompletableFuture<List<BankCard>> findAll() {
@@ -87,7 +81,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
      * Busca una tarjeta de crédito por su UUID.
      *
      * @param id El número de la tarjeta de crédito a buscar.
-     * @return Un `CompletableFuture` que contiene la tarjeta de crédito si se encuentra, o `null` si no existe.
+     * @return Un {@code CompletableFuture} que contiene la tarjeta de crédito si se encuentra, o {@code null} si no existe.
      */
     @Override
     public CompletableFuture<BankCard> findById(String id) {
@@ -121,7 +115,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
      * Guarda una nueva tarjeta de crédito en la base de datos.
      *
      * @param bankCard La tarjeta de crédito a guardar.
-     * @return Un `CompletableFuture` que contiene la tarjeta de crédito guardada, o lanza una excepción si hay un error.
+     * @return Un {@code CompletableFuture} que contiene la tarjeta de crédito guardada, o lanza una excepción si hay un error.
      */
     @Override
     public CompletableFuture<BankCard> save(BankCard bankCard) {
@@ -155,7 +149,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
      *
      * @param id El número de la tarjeta a actualizar.
      * @param bankCard La tarjeta de crédito con los nuevos datos.
-     * @return Un `CompletableFuture` que contiene la tarjeta de crédito actualizada, o lanza una excepción si no se encuentra.
+     * @return Un {@code CompletableFuture} que contiene la tarjeta de crédito actualizada, o lanza una excepción si no se encuentra.
      */
     @Override
     public CompletableFuture<BankCard> update(String id, BankCard bankCard) {
@@ -169,7 +163,6 @@ public class BankCardRepositoryImpl implements BankCardRepository {
                 stmt.setObject(1, bankCard.getExpirationDate());
                 stmt.setObject(2, LocalDateTime.now());
                 stmt.setString(3, bankCard.getNumber());
-
 
                 int res = stmt.executeUpdate();
                 if (res > 0) {
@@ -189,8 +182,8 @@ public class BankCardRepositoryImpl implements BankCardRepository {
     /**
      * Elimina una tarjeta de crédito de la base de datos por su UUID.
      *
-     * @param id El id de la tarjeta de crédito a eliminar.
-     * @return Un `CompletableFuture` que contiene `true` si la tarjeta fue eliminada, o `false` si no se encontró.
+     * @param id El ID de la tarjeta de crédito a eliminar.
+     * @return Un {@code CompletableFuture} que contiene {@code true} si la tarjeta fue eliminada, o {@code false} si no se encontró.
      */
     @Override
     public CompletableFuture<Boolean> delete(String id) {
@@ -215,7 +208,7 @@ public class BankCardRepositoryImpl implements BankCardRepository {
      * Busca todas las tarjetas de crédito asociadas a un cliente.
      *
      * @param clientId El UUID del cliente.
-     * @return Un `CompletableFuture` que contiene una lista de tarjetas de crédito asociadas al cliente, o una lista vacía si no se encuentran.
+     * @return Un {@code CompletableFuture} que contiene una lista de tarjetas de crédito asociadas al cliente, o una lista vacía si no se encuentran.
      */
     @Override
     public CompletableFuture<List<BankCard>> getBankCardsByClientId(Long clientId) {
@@ -247,5 +240,4 @@ public class BankCardRepositoryImpl implements BankCardRepository {
         });
     }
 }
-
 

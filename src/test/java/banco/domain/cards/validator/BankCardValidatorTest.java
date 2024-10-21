@@ -55,7 +55,7 @@ public class BankCardValidatorTest {
 
         BankCardException exception = assertThrows(BankCardException.class, () -> validator.validate(card));
 
-        assertEquals("El número de la tarjeta caracteres inválidos. Debe ser XXXX-XXXX-XXXX-XXXX", exception.getMessage());
+        assertEquals("El número de la tarjeta no tiene el formato correcto. Debe ser XXXX-XXXX-XXXX-XXXX", exception.getMessage());
     }
 
     @Test

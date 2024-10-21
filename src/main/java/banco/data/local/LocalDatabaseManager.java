@@ -17,7 +17,7 @@ public class LocalDatabaseManager {
 
     public static synchronized LocalDatabaseManager getInstance() {
         if (instance == null) {
-            instance = new LocalDatabaseManager(false);
+            instance = new LocalDatabaseManager();
         }
         return instance;
     }
@@ -28,50 +28,29 @@ public class LocalDatabaseManager {
      * Inserta toda la configuracion de hickary a partir de un archivo de propiedades
      * @throws RuntimeException si no se puede cargar el archivo de propiedades
      */
-    private LocalDatabaseManager(Boolean forTesting) {
-        if(!forTesting) {
-            try {
-                Properties properties = new Properties();
-                try (InputStream input = getClass().getClassLoader().getResourceAsStream("localclients/database.properties")) {
-                    if (input == null) {
-                        throw new RuntimeException("No se pudo encontrar el archivo database.properties");
-                    }
-                    properties.load(input);
+    private LocalDatabaseManager() {
+        try {
+            Properties properties = new Properties();
+            try (InputStream input = getClass().getClassLoader().getResourceAsStream("localclients/database.properties")) {
+                if (input == null) {
+                    throw new RuntimeException("No se pudo encontrar el archivo database.properties");
                 }
-
-                HikariConfig config = new HikariConfig();
-                config.setJdbcUrl(properties.getProperty("db.url"));
-                config.setMinimumIdle(1);
-                config.setMaximumPoolSize(Integer.parseInt(properties.getProperty("db.pool.size")));
-                config.setConnectionTimeout(Long.parseLong(properties.getProperty("db.connectionTimeout")));
-                config.setIdleTimeout(Long.parseLong(properties.getProperty("db.idleTimeout")));
-                config.setMaxLifetime(Long.parseLong(properties.getProperty("db.maxLifetime")));
-
-
-                dataSource = new HikariDataSource(config);
-
-            } catch (IOException e) {
-                throw new RuntimeException("Error al cargar las propiedades de la base de datos", e);
+                properties.load(input);
             }
-        }
-    }
 
-    /**
-     * Método para obtener la instancia del manager de la base de datos remota dedicado para tests
-     * @return una instancia de RemoteDatabaseManager que no tiene creada la conexion
-     */
-    public static synchronized LocalDatabaseManager getTestInstance(
-            String url, String username, String password
-    ) {
-        if (instance == null) {
-            instance = new LocalDatabaseManager(true);
             HikariConfig config = new HikariConfig();
-            config.setJdbcUrl(url);
-            config.setUsername(username);
-            config.setPassword(password);
-            instance.dataSource = new HikariDataSource(config);
+            config.setJdbcUrl(properties.getProperty("db.url"));
+            config.setMinimumIdle(1);
+            config.setMaximumPoolSize(Integer.parseInt(properties.getProperty("db.pool.size")));
+            config.setConnectionTimeout(Long.parseLong(properties.getProperty("db.connectionTimeout")));
+            config.setIdleTimeout(Long.parseLong(properties.getProperty("db.idleTimeout")));
+            config.setMaxLifetime(Long.parseLong(properties.getProperty("db.maxLifetime")));
+            dataSource = new HikariDataSource(config);
+
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error al cargar las propiedades de la base de datos", e);
         }
-        return instance;
     }
 
 

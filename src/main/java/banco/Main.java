@@ -30,7 +30,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Logger logger = LoggerFactory.getLogger(Main.class);
-        LocalDatabaseConfig localDatabaseConfig = new LocalDatabaseConfig("resources/localclients/database.properties");
+        LocalDatabaseConfig localDatabaseConfig = new LocalDatabaseConfig("localclients/database.properties");
         LocalDatabaseManager localDatabaseManager = LocalDatabaseManager.getInstance();
         LocalDatabaseInitializer localDatabaseInitializer = new LocalDatabaseInitializer(localDatabaseConfig, localDatabaseManager);
         localDatabaseInitializer.initializeDatabase();
@@ -48,8 +48,6 @@ public class Main {
 
         // Crear la instancia del servicio
         ImplClientService clientService = ImplClientService.getInstance(localClientRepository, bankCardRepository, clientRemoteRepository, notificationService);
-
-
 
         logger.debug(clientService.findAllClients().toString());
 

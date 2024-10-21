@@ -147,7 +147,6 @@ de clientes y tarjetas. A continuación se detallan los formatos y sus respectiv
 
 ```mermaid
 classDiagram
-    direction LR
     class Storage ~T~   {
         <<interface>>
         +Flux~T~ importFile(File file)
@@ -180,7 +179,6 @@ classDiagram
 
 ```mermaid
 classDiagram
-    direction LR
     class Repository ~ID,T~ {
         CompletableFuture ~List ~T~~ findAll()
         CompletableFuture ~T~ findById(ID id)
@@ -219,7 +217,6 @@ classDiagram
 
 ```mermaid
 classDiagram
-    direction LR
     class Repository ~ID,T~ {
         CompletableFuture ~List ~T~~ findAll()
         CompletableFuture ~T~ findById(ID id)
@@ -263,7 +260,6 @@ classDiagram
 
 ```mermaid
 classDiagram
-    direction LR
     class Repository ~ID,T~ {
         CompletableFuture ~List ~T~~ findAll()
         CompletableFuture ~T~ findById(ID id)
@@ -305,59 +301,34 @@ classDiagram
 
 ```mermaid
 classDiagram
-    class Cache ~K, V~{
-        <<interface>>
-        +V get(K key)
-        +void put(K key, V value)
-        +void remove(K key)
-        +void clear()
-        +int size()
-        +Collection~V~ values()
-        +boolean isEmpty()
-        +boolean isNotEmpty()
-        +boolean containsKey(K id)
-    }
-
-    class CacheTarjeta ~K, V~ {
-        + int TARJETA_CACHE_SIZE = 5
-    }
-
-    class CacheImpl ~K, V~ {
-        - int cacheSize
-        - LinkedHashMap~K, V~ cache
-        + CacheImpl(int cacheSize)
-        + V get(K key)
+    direction LR
+    class Cache ~K, V~ {
+         <<interface>>
         + void put(K key, V value)
+        + V get(K key)
         + void remove(K key)
         + void clear()
-        + int size()
-        + Collection~V~ values()
-        + boolean isEmpty()
-        + boolean isNotEmpty()
-        + boolean containsKey(K key)
+        + void shutdown()
     }
 
-    
+    Cache ..|> ClientesCache
 
-    class CacheUsuario ~K, V~ {
-        + int TARJETA_CACHE_SIZE = 5
+    class ClientesCache ~Long, Client~ {
     }
 
-    class CacheUsuarioImpl {
-        + CacheUsuarioImpl(int cacheSize)
-    }
+    ClientesCache --> ClientesCacheImpl
 
-    class CacheTarjetaImpl {
-        + CacheUsuarioImpl(int cacheSize)
+    class ClientesCacheImpl {
+        - Logger logger
+        - Map<Long, Client> cache
+        - ScheduledExecutorService cleaner
+        + ClientesCacheImpl(int maxSize)
+        + void put(Long key, Client value)
+        + Client get(Long key)
+        + void remove(Long key)
+        + void clear()
+        + void shutdown()
     }
-
-    Cache ..|> CacheImpl
-    Cache --> CacheTarjeta
-    Cache --> CacheUsuario
-    CacheImpl ..|> CacheUsuarioImpl
-    CacheUsuario ..|> CacheUsuarioImpl
-    CacheImpl ..|> CacheTarjetaImpl
-    CacheTarjeta ..|> CacheTarjetaImpl
 
 
 ```

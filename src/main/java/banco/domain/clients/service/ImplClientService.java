@@ -1,6 +1,7 @@
 package banco.domain.clients.service;
 
 import banco.domain.cards.exceptions.BankCardException;
+import banco.domain.cards.exceptions.BankCardNotFoundException;
 import banco.domain.cards.model.BankCard;
 import banco.domain.cards.repository.BankCardRepository;
 import banco.domain.cards.validator.BankCardValidator;
@@ -250,14 +251,14 @@ public class ImplClientService implements ClientService {
      * @return la tarjeta actualizada
      */
     @Override
-    public BankCard updateBankCard(String number, BankCard bankCard) {
+    public BankCard updateBankCard(String number, BankCard bankCard) throws BankCardNotFoundException {
         try {
             bankCardValidator.validate(bankCard);
             logger.debug("Actualizando tarjeta con número: {}", number);
             localClientRepository.updateBankCard(number, bankCard).join();
             return bankCardRepository.update(number, bankCard).join();
         } catch (RuntimeException e) {
-            throw new ClientNotFound(number);
+            throw new BankCardNotFoundException("Tarjeta con numero "+number+" no encontrada");
         } catch (BankCardException e) {
             logger.error("Error al actualizar la tarjeta: {}", e.getMessage());
         }
@@ -269,13 +270,13 @@ public class ImplClientService implements ClientService {
      * @param number número de la tarjeta a eliminar
      */
     @Override
-    public void deleteBankCard(String number) {
+    public void deleteBankCard(String number) throws BankCardNotFoundException {
         try {
             logger.debug("Eliminando tarjeta con número: {}", number);
             bankCardRepository.delete(number).join();
             localClientRepository.deleteBankCard(number).join();
         } catch (Exception e) {
-            throw new ClientNotFound(number);
+            throw new BankCardNotFoundException(number);
         }
     }
 

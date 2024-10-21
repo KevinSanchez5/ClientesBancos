@@ -1,5 +1,6 @@
 package banco.domain.clients.service;
 
+import banco.domain.cards.exceptions.BankCardNotFoundException;
 import banco.domain.cards.model.BankCard;
 import banco.domain.clients.exceptions.ClientExceptionBadRequest;
 import banco.domain.clients.exceptions.ClientNotFoundException;
@@ -27,9 +28,9 @@ public interface ClientService {
 
     public BankCard saveBankCard(BankCard bankCard);
 
-    public BankCard updateBankCard(String number, BankCard bankCard);
+    public BankCard updateBankCard(String number, BankCard bankCard) throws BankCardNotFoundException;
 
-    public void deleteBankCard(String number);
+    public void deleteBankCard(String number) throws BankCardNotFoundException;
 
 
 }
